@@ -1,6 +1,4 @@
-import glob
 from math import ceil
-from pydoc import classname, splitdoc
 import random
 import numpy as np
 import os
@@ -34,7 +32,7 @@ class Create_Database:
 
             for file in train:
                 file = os.path.join(self.src, sig, file)
-                shutil.copy2(file, os.path.join(dst_path, sig))
+                shutil.move(file, os.path.join(dst_path, sig))
 
     def ds_valid(self):
         dst_path = os.path.join(self.dst, "val")
@@ -50,7 +48,7 @@ class Create_Database:
 
             for file in val:
                 file = os.path.join(self.src, sig, file)
-                shutil.copy2(file, os.path.join(dst_path, sig))
+                shutil.move(file, os.path.join(dst_path, sig))
 
     def ds_test(self):
         dst_path = os.path.join(self.dst, "test")
@@ -62,7 +60,7 @@ class Create_Database:
 
             for file in files:
                 file = os.path.join(self.src, sig, file)
-                shutil.copy2(file, os.path.join(dst_path, sig))
+                shutil.move(file, os.path.join(dst_path, sig))
 
     def create(self):
         self.ds_train()
