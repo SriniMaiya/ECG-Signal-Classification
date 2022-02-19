@@ -5,11 +5,12 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import torchvision
-from torchvision import datasets, models, transforms
+from torchvision import models
 import matplotlib.pyplot as plt
 import time
 import os
 import copy
+from utils import train_dataloader
 print("PyTorch Version: ",torch.__version__)
 print("Torchvision Version: ",torchvision.__version__)
 
@@ -31,36 +32,9 @@ class NeuralNetworkClassifier:
         self.criterion = None
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    def dataloader(self, dataset_path:str="", batch_size:int = 64 ):
+    def initialize_model(self,num_classes:int = 3):
 
-        data_transforms = {
-                            'train':transforms.Compose([
-                                transforms.Resize(self.input_size),
-                                transforms.ToTensor(),
-                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-                            ]),
-                            'val': transforms.Compose([
-                                transforms.Resize(self.input_size),
-                                transforms.ToTensor(),
-                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-                            ]),
-                         }
 
-        image_datasets = {x: datasets.ImageFolder(os.path.join(dataset_path, x), data_transforms[x]) for x in ["train", "val"] }
-        dataloader_dict = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size, shuffle = True, num_workers = 4) for x in ["train", "val"]}
-        return dataloader_dict
-    
-
-    def initialize_model(self,num_classes:int = 3, feature_extract:bool = True, learning_rate:float=0.001 ):
-        
-        params_to_update = []
-        if feature_extract:
-            for param in self.model.parameters():
-                param.requires_grad = True
-                params_to_update.append(param)
-
-        self.optimizer = optim.SGD(params_to_update, lr=learning_rate, momentum=0.9)
-        self.criterion = nn.CrossEntropyLoss()
 
         if self.name.upper() == "alexnet".upper():
             n_feat = self.model.classifier[6].in_features
@@ -74,11 +48,19 @@ class NeuralNetworkClassifier:
             n_feat = self.model.fc.in_features
             self.model.fc = nn.Linear(n_feat, num_classes)
         
-
         self.model = self.model.to(self.device)
 
 
-    def start_training(self, dataloaders, num_epochs, save_weights:bool = True, weights_path:str=""):
+    def start_training(self, dataloaders, num_epochs, save_weights:bool = True, weights_path:str="", feature_extract:bool = True, learning_rate:float=0.001 ):
+        params_to_update = []
+        if feature_extract:
+            for param in self.model.parameters():
+                param.requires_grad = True
+                params_to_update.append(param)
+
+        self.optimizer = optim.SGD(params_to_update, lr=learning_rate, momentum=0.9)
+        self.criterion = nn.CrossEntropyLoss()
+
         since = time.time()
         history = {"train":{"loss":[], "acc":[]}, "val": {"loss":[], "acc":[]}}
 
@@ -147,13 +129,14 @@ class NeuralNetworkClassifier:
         return self.model, history
 if __name__ == "__main__":
 
-    classifier = NeuralNetworkClassifier(model_name="squeezenet")
-    dataloader = classifier.dataloader(dataset_path="images", batch_size=16)
-    classifier.initialize_model(num_classes=3, feature_extract=True, learning_rate=0.001)
-    model, history = classifier.start_training(dataloaders=dataloader, num_epochs=1, save_weights= True, weights_path="Weights")
+    classifier = NeuralNetworkClassifier(model_name="alexnet")
+    dataloader_dict = train_dataloader(input_size=224, dataset_path="images", batch_size=32)
+    classifier.initialize_model(num_classes=3)
+    model, history = classifier.start_training(dataloaders=dataloader_dict, num_epochs=30, save_weights= True, 
+                                weights_path="Weights",  feature_extract=True, learning_rate=0.001)
     torch.cuda.empty_cache()
     
-    print(history)
+    # print(history)
 
 
 
