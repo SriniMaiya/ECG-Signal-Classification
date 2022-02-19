@@ -36,12 +36,17 @@ class Ui_SignalProcessing(QMainWindow):
 
         # Plot global variable
         self.redPen = pg.mkPen((255, 0, 0))
+        self.history = None
         self.setupUi()
 
-    def setupUi(self):  # SignalProcessing
-        # SignalProcessing.setObjectName("SignalProcessing")
-        # SignalProcessing.resize(1122, 669)
 
+    def setupUi(self):  # SignalProcessing
+
+        
+        ''' define Windows Size: It can be move to other section as well base on u r need'''
+        SignalProcessing.setObjectName("SignalProcessing")
+        SignalProcessing.resize(1122, 669)
+        
         self.centralwidget = QtWidgets.QWidget()  # SignalProcessing
         self.centralwidget.setObjectName("centralwidget")
 
@@ -57,7 +62,6 @@ class Ui_SignalProcessing(QMainWindow):
         self.widget_4.setStyleSheet("background-color: blue")
         self.widget_4.setObjectName("widget_4")
         self.widget_4.addItem(self.imgOne)
-        #self.firstSignalFour = self.widget_4.plot(self.time, self.sig_ARR, pen= self.redPen)
 
         self.widget_2 = pg.PlotWidget(self.tab)                     
         self.widget_2.setGeometry(QtCore.QRect(10, 320, 311, 261))
@@ -78,7 +82,6 @@ class Ui_SignalProcessing(QMainWindow):
         self.widget_3.setStyleSheet("background-color: white")
         self.widget_3.setObjectName("widget_3")
         self.widget_3.addItem(self.imgTwo)
-        #self.firstSignalThree = self.widget_3.plot(self.time, self.sig_NSR, pen= self.redPen)
 
         
         self.btnLoadData = QtWidgets.QPushButton(self.tab)
@@ -118,25 +121,21 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnTrain.setGeometry(QtCore.QRect(30, 30, 113, 32))
         self.btnTrain.setObjectName("btnTrain")
 
-        self.btnPredict = QtWidgets.QPushButton(self.tab_2)
-        self.btnPredict.setGeometry(QtCore.QRect(240, 30, 113, 32))
-        self.btnPredict.setObjectName("btnPredict")
-
-        self.btnUnknown = QtWidgets.QPushButton(self.tab_2)
-        self.btnUnknown.setGeometry(QtCore.QRect(440, 30, 113, 32))
-        self.btnUnknown.setObjectName("btnUnknown")
+        listLr = ["0.0001", "0.0003", "0.001", "0.003", "0.01", "0.03"]
+        self.QComboBoxRate = QtWidgets.QComboBox(self.tab_2)
+        self.QComboBoxRate.setGeometry(QtCore.QRect(440, 30, 113, 32))
+        self.QComboBoxRate.setObjectName("QComboBoxRate")
+        self.QComboBoxRate.addItems(listLr)
 
         self.labelTrain = QtWidgets.QLabel(self.tab_2)
         self.labelTrain.setGeometry(QtCore.QRect(40, 10, 121, 16))
         self.labelTrain.setObjectName("labelTrain")
 
-        self.labelPredict = QtWidgets.QLabel(self.tab_2)
-        self.labelPredict.setGeometry(QtCore.QRect(250, 10, 121, 16))
-        self.labelPredict.setObjectName("labelPredict")
-
+        networkType = ["AlexNet", "GoogLeNet", "SqueezeNet"]
         self.comboBox_2 = QtWidgets.QComboBox(self.tab_2)
         self.comboBox_2.setGeometry(QtCore.QRect(650, 60, 211, 41))
         self.comboBox_2.setObjectName("comboBox_2")
+        self.comboBox_2.addItems(networkType)
 
         self.labelPredict_2 = QtWidgets.QLabel(self.tab_2)
         self.labelPredict_2.setGeometry(QtCore.QRect(660, 40, 121, 16))
@@ -148,6 +147,21 @@ class Ui_SignalProcessing(QMainWindow):
         self.widget_5.setObjectName("widget_5")
 
         self.tabWidget.addTab(self.tab_2, "")
+
+        ''' Tab prediction '''
+        self.tabPrediction = QtWidgets.QWidget()
+        self.tabPrediction.setObjectName("tabPrediction")
+
+        self.labelPredict = QtWidgets.QLabel(self.tabPrediction)
+        self.labelPredict.setGeometry(QtCore.QRect(10, 30, 121, 16))
+        self.labelPredict.setObjectName("labelPredict")
+
+        self.btnPredict = QtWidgets.QPushButton(self.tabPrediction)
+        self.btnPredict.setGeometry(QtCore.QRect(10, 40, 113, 32))
+        self.btnPredict.setObjectName("btnPredict")
+
+
+        self.tabWidget.addTab(self.tabPrediction, "")
 
         SignalProcessing.setCentralWidget(self.centralwidget)
 
@@ -179,16 +193,17 @@ class Ui_SignalProcessing(QMainWindow):
                                   _translate("SignalProcessing", "Signal Pre-Processing Observation"))
         self.btnTrain.setText(_translate("SignalProcessing", "Train "))
         self.btnPredict.setText(_translate("SignalProcessing", "Test"))
-        self.btnUnknown.setText(_translate("SignalProcessing", "Unknown"))
+        #self.QComboBoxRate.setText(_translate("SignalProcessing", "Unknown"))
         self.labelTrain.setText(_translate("SignalProcessing", "None"))
         self.labelPredict.setText(_translate("SignalProcessing", "None"))
         self.labelPredict_2.setText(_translate("SignalProcessing", "Neural Network:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SignalProcessing", "Training Signal"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPrediction), _translate("SignalProcessing", "Prediction"))
 
     def connect(self):
         ''' Define Signal and SLot fo GUI Connection '''
         self.btnLoadData.clicked.connect(self.loadData)
-        self.btnTrain.clicked.connect(self.test_func)
+        self.btnTrain.clicked.connect(self.slotTrainNetwork)
         self.btnPlotRnd.clicked.connect(self.plotSignal)
 
     # Slots are defined here
@@ -197,6 +212,9 @@ class Ui_SignalProcessing(QMainWindow):
 
     def plotSignal(self):
         plot_signal_rnd(self)
+
+    def slotTrainNetwork(self):
+        trainNetwork(self)
 
     # Test Function
     def test_func(self):
@@ -208,6 +226,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     SignalProcessing = QtWidgets.QMainWindow()
     ui = Ui_SignalProcessing()
-    ui.setupUi()
+    #ui.setupUi() # It is allready defined !
     SignalProcessing.show()
     sys.exit(app.exec_())

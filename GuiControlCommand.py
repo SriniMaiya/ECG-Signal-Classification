@@ -6,6 +6,8 @@ from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
 import os
 from PIL import Image
+from Models.models import NeuralNetworkClassifier
+
 """
 Function: Open QFileDialog to address and open the ECG signals 
 base on the User decisions 
@@ -154,5 +156,19 @@ def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
     cwtf = np.rot90((cm(cwtf)[:,:,:3]*255).astype(np.uint8))
     
     return [sig, sigf, cwt, cwtf]
+    
 
+def trainNetwork(self):
+    model = NeuralNetworkClassifier(self.comboBox_2.currentText())
+    dataloader = model.dataloader(dataset_path="images", batch_size=1) # add Qcombox for batch size
+    model.initialize_model(num_classes=3, feature_extract=True, learning_rate=float(self.QComboBoxRate.currentText()))
+    model, self.history = model.start_training(dataloaders=dataloader, num_epochs=1, save_weights= True, weights_path="Weights")
+    #torch.cuda.empty_cache()
 
+    '''
+    classifier = NeuralNetworkClassifier(model_name="squeezenet")
+    dataloader = classifier.dataloader(dataset_path="images", batch_size=16)
+    classifier.initialize_model(num_classes=3, feature_extract=True, learning_rate=0.001)
+    model, history = classifier.start_training(dataloaders=dataloader, num_epochs=1, save_weights= True, weights_path="Weights")
+    torch.cuda.empty_cache()
+    '''
