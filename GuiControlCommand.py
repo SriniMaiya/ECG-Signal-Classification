@@ -7,6 +7,8 @@ from matplotlib.pyplot import get_cmap
 import os
 from PIL import Image
 from Models.models import NeuralNetworkClassifier
+from Models.utils import train_dataloader
+
 
 """
 Function: Open QFileDialog to address and open the ECG signals 
@@ -15,7 +17,7 @@ base on the User decisions
 Connection: It is called from slot @XXX From Main Gui 
 """
 
-
+# HOw to open(Brows) data frmo PyQt
 def LoadECGData(self):
     (self.FilePath, ECGData) = QFileDialog.getOpenFileNames(self, "Choose File as .MAT", "", "ECG data set ("
                                                                                              "*.mat *.MAT)")
@@ -160,15 +162,22 @@ def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
 
 def trainNetwork(self):
     model = NeuralNetworkClassifier(self.comboBox_2.currentText())
-    dataloader = model.dataloader(dataset_path="images", batch_size=1) # add Qcombox for batch size
-    model.initialize_model(num_classes=3, feature_extract=True, learning_rate=float(self.QComboBoxRate.currentText()))
-    model, self.history = model.start_training(dataloaders=dataloader, num_epochs=1, save_weights= True, weights_path="Weights")
-    #torch.cuda.empty_cache()
+    dataloader = train_dataloader(input_size = 224, dataset_path="images", batch_size=int(self.QCombobatch_size.currentText())) # add Qcombox for batch size
+    model.initialize_model(num_classes=3)
+    model, self.history = model.start_training(dataloaders=dataloader, num_epochs=int(self.txtNum_epochs.toPlainText()), save_weights= True, weights_path="Weights",
+                                                 feature_extract=True, learning_rate=float(self.QComboBoxRate.currentText()))
+
+
+
+    # This Value will goes to the plot 
+    plotAccTrain = self.history["train"]["acc"]
+    plotLossTrain = self.history["train"]["loss"]
+
+
+    plotAccVal = self.history["val"]["acc"]
+    plotLossVal = self.history["val"]["loss"]
+
+
 
     '''
-    classifier = NeuralNetworkClassifier(model_name="squeezenet")
-    dataloader = classifier.dataloader(dataset_path="images", batch_size=16)
-    classifier.initialize_model(num_classes=3, feature_extract=True, learning_rate=0.001)
-    model, history = classifier.start_training(dataloaders=dataloader, num_epochs=1, save_weights= True, weights_path="Weights")
-    torch.cuda.empty_cache()
     '''

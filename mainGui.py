@@ -36,6 +36,7 @@ class Ui_SignalProcessing(QMainWindow):
 
         # Plot global variable
         self.redPen = pg.mkPen((255, 0, 0))
+        self.greenPen = pg.mkPen((0,255,0))
         self.history = None
         self.setupUi()
 
@@ -63,21 +64,21 @@ class Ui_SignalProcessing(QMainWindow):
         self.widget_4.setObjectName("widget_4")
         self.widget_4.addItem(self.imgOne)
 
-        self.widget_2 = pg.PlotWidget(self.tab)                     
-        self.widget_2.setGeometry(QtCore.QRect(10, 320, 311, 261))
+        self.widget_2 = pg.PlotWidget(self.tab)                         #sig
+        self.widget_2.setGeometry(QtCore.QRect(350, 320, 311, 251))
         self.widget_2.setStyleSheet("background-color: red")
         self.widget_2.setObjectName("widget_2")
-        self.firstSignalTwo = self.widget_2.plot(self.time, self.sig_CHF, pen= self.redPen)
+        self.firstSignalTwo = self.widget_2.plot(self.time, self.sig_CHF, pen= self.greenPen)
 
 
-        self.widget = pg.PlotWidget(self.tab)
-        self.widget.setGeometry(QtCore.QRect(350, 320, 311, 251))
+        self.widget = pg.PlotWidget(self.tab)                           #sigf
+        self.widget.setGeometry(QtCore.QRect(10, 320, 311, 261))
         self.widget.setStyleSheet("background-color: green")
         self.widget.setObjectName("widget")
         self.firstSignal = self.widget.plot(self.time, self.sig_NSR, pen= self.redPen)
 
 
-        self.widget_3 = pg.PlotWidget(self.tab)
+        self.widget_3 = pg.PlotWidget(self.tab)                         #cwtf
         self.widget_3.setGeometry(QtCore.QRect(350, 10, 311, 271))
         self.widget_3.setStyleSheet("background-color: white")
         self.widget_3.setObjectName("widget_3")
@@ -121,11 +122,40 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnTrain.setGeometry(QtCore.QRect(30, 30, 113, 32))
         self.btnTrain.setObjectName("btnTrain")
 
+        self.lblbatch_size = QtWidgets.QLabel(self.tab_2)
+        self.lblbatch_size.setGeometry(QtCore.QRect(150, 10, 121, 16))
+        self.lblbatch_size.setObjectName("lblbatch_size")
+        self.lblbatch_size.setText("batch_size:")
+
+        listbatch_size = ["16", "32", "64"]
+        self.QCombobatch_size = QtWidgets.QComboBox(self.tab_2)
+        self.QCombobatch_size.setGeometry(QtCore.QRect(150, 30, 113, 32))
+        self.QCombobatch_size.setObjectName("QCombobatch_size")
+        self.QCombobatch_size.addItems(listbatch_size)
+
+
+        self.lblRate = QtWidgets.QLabel(self.tab_2)
+        self.lblRate.setGeometry(QtCore.QRect(440, 10, 121, 16))
+        self.lblRate.setObjectName("lblRate")
+        self.lblRate.setText("Rate:")
+
         listLr = ["0.0001", "0.0003", "0.001", "0.003", "0.01", "0.03"]
         self.QComboBoxRate = QtWidgets.QComboBox(self.tab_2)
         self.QComboBoxRate.setGeometry(QtCore.QRect(440, 30, 113, 32))
         self.QComboBoxRate.setObjectName("QComboBoxRate")
         self.QComboBoxRate.addItems(listLr)
+
+
+
+        self.lblnum_epochs = QtWidgets.QLabel(self.tab_2)
+        self.lblnum_epochs.setGeometry(QtCore.QRect(640, 10, 121, 16))
+        self.lblnum_epochs.setObjectName("lblRate")
+        self.lblnum_epochs.setText("Epochs:")
+
+        self.txtNum_epochs = QtWidgets.QTextEdit(self.tab_2)
+        self.txtNum_epochs.setGeometry(QtCore.QRect(640, 30, 70, 30))
+        self.txtNum_epochs.setObjectName("txtNum_epochs")
+        self.txtNum_epochs.setText("10")
 
         self.labelTrain = QtWidgets.QLabel(self.tab_2)
         self.labelTrain.setGeometry(QtCore.QRect(40, 10, 121, 16))
@@ -133,18 +163,24 @@ class Ui_SignalProcessing(QMainWindow):
 
         networkType = ["AlexNet", "GoogLeNet", "SqueezeNet"]
         self.comboBox_2 = QtWidgets.QComboBox(self.tab_2)
-        self.comboBox_2.setGeometry(QtCore.QRect(650, 60, 211, 41))
+        self.comboBox_2.setGeometry(QtCore.QRect(280, 30, 113, 32))
         self.comboBox_2.setObjectName("comboBox_2")
         self.comboBox_2.addItems(networkType)
 
         self.labelPredict_2 = QtWidgets.QLabel(self.tab_2)
-        self.labelPredict_2.setGeometry(QtCore.QRect(660, 40, 121, 16))
+        self.labelPredict_2.setGeometry(QtCore.QRect(280, 0, 113, 32))
         self.labelPredict_2.setObjectName("labelPredict_2")
 
-        self.widget_5 = QtWidgets.QWidget(self.tab_2)
-        self.widget_5.setGeometry(QtCore.QRect(30, 120, 611, 301))
-        self.widget_5.setStyleSheet("background-color: green")
-        self.widget_5.setObjectName("widget_5")
+        self.widgetPlotAcc = pg.PlotWidget(self.tab_2)
+        self.widgetPlotAcc.setGeometry(QtCore.QRect(30, 120, 400, 300))
+        self.widgetPlotAcc.setObjectName("widgetPlotAcc")
+        # self.firstSignalTwo = self.widgetPlotAcc.plot(self.time, self.sig_CHF, pen= self.redPen)
+
+        
+        self.widgetPlotLoss = pg.PlotWidget(self.tab_2)
+        self.widgetPlotLoss.setGeometry(QtCore.QRect(450, 120, 400, 300))
+        self.widgetPlotLoss.setObjectName("widgetPlotLoss")
+        # self.firstSignalTwo = self.widgetPlotLoss.plot(self.time, self.sig_CHF, pen= self.redPen)
 
         self.tabWidget.addTab(self.tab_2, "")
 
@@ -152,14 +188,56 @@ class Ui_SignalProcessing(QMainWindow):
         self.tabPrediction = QtWidgets.QWidget()
         self.tabPrediction.setObjectName("tabPrediction")
 
-        self.labelPredict = QtWidgets.QLabel(self.tabPrediction)
-        self.labelPredict.setGeometry(QtCore.QRect(10, 30, 121, 16))
-        self.labelPredict.setObjectName("labelPredict")
+        self.labelResu = QtWidgets.QLabel(self.tabPrediction)
+        self.labelResu.setGeometry(QtCore.QRect(700, 10, 121, 16))
+        self.labelResu.setObjectName("labelResu")
+        self.labelResu.setText("Predictions Results:")
+        
+        self.labelResARR = QtWidgets.QLabel(self.tabPrediction)
+        self.labelResARR.setGeometry(QtCore.QRect(700, 40, 121, 16))
+        self.labelResARR.setObjectName("labelResARR")
+        self.labelResARR.setText("ARR")
+        
+        self.labelResCHF = QtWidgets.QLabel(self.tabPrediction)
+        self.labelResCHF.setGeometry(QtCore.QRect(700, 70, 121, 16))
+        self.labelResCHF.setObjectName("labelResCHF")
+        self.labelResCHF.setText("CHF")
+        
+        self.labelResNSR = QtWidgets.QLabel(self.tabPrediction)
+        self.labelResNSR.setGeometry(QtCore.QRect(700, 100, 121, 16))
+        self.labelResNSR.setObjectName("labelResNSR")
+        self.labelResNSR.setText("NSR")
 
-        self.btnPredict = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredict.setGeometry(QtCore.QRect(10, 40, 113, 32))
-        self.btnPredict.setObjectName("btnPredict")
 
+        self.labelPredictSCL = QtWidgets.QLabel(self.tabPrediction)
+        self.labelPredictSCL.setGeometry(QtCore.QRect(10, 10, 121, 16))
+        self.labelPredictSCL.setObjectName("labelPredictSCL")
+
+        self.btnPredictSCL = QtWidgets.QPushButton(self.tabPrediction)
+        self.btnPredictSCL.setGeometry(QtCore.QRect(10, 40, 113, 32))
+        self.btnPredictSCL.setObjectName("btnPredictSCL")
+
+
+        self.labelPredictSGN = QtWidgets.QLabel(self.tabPrediction)
+        self.labelPredictSGN.setGeometry(QtCore.QRect(300, 10, 121, 16))
+        self.labelPredictSGN.setObjectName("labelPredictSGN")
+        
+
+        self.btnPredictSGN = QtWidgets.QPushButton(self.tabPrediction)
+        self.btnPredictSGN.setGeometry(QtCore.QRect(300, 40, 113, 32))
+        self.btnPredictSGN.setObjectName("btnPredictSGN")
+
+        self.widgetPredicSCL = pg.PlotWidget(self.tabPrediction)
+        self.widgetPredicSCL.setGeometry(QtCore.QRect(30, 180, 400, 300))
+        self.widgetPredicSCL.setObjectName("widgetPredicSCL")
+        #self.firstSignalTwo = self.widgetPlotAcc.plot(self.time, self.sig_CHF, pen= self.redPen)
+
+        
+        self.widgetPredicSGN = pg.PlotWidget(self.tabPrediction)
+        self.widgetPredicSGN.setGeometry(QtCore.QRect(450, 180, 400, 300))
+        self.widgetPredicSGN.setObjectName("widgetPredicSGN")
+        #self.firstSignalTwo = self.widgetPlotLoss.plot(self.time, self.sig_CHF, pen= self.redPen)
+        
 
         self.tabWidget.addTab(self.tabPrediction, "")
 
@@ -192,13 +270,15 @@ class Ui_SignalProcessing(QMainWindow):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab),
                                   _translate("SignalProcessing", "Signal Pre-Processing Observation"))
         self.btnTrain.setText(_translate("SignalProcessing", "Train "))
-        self.btnPredict.setText(_translate("SignalProcessing", "Test"))
+        self.btnPredictSCL.setText(_translate("SignalProcessing", "Test Sclogram"))
         #self.QComboBoxRate.setText(_translate("SignalProcessing", "Unknown"))
-        self.labelTrain.setText(_translate("SignalProcessing", "None"))
-        self.labelPredict.setText(_translate("SignalProcessing", "None"))
+        self.labelTrain.setText(_translate("SignalProcessing", "Train")) 
+        self.labelPredictSCL.setText(_translate("SignalProcessing", "Prediction From Scalogram"))
         self.labelPredict_2.setText(_translate("SignalProcessing", "Neural Network:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SignalProcessing", "Training Signal"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPrediction), _translate("SignalProcessing", "Prediction"))
+        self.btnPredictSGN.setText("Test Signal")
+        self.labelPredictSGN.setText("Prediction From Signal")
 
     def connect(self):
         ''' Define Signal and SLot fo GUI Connection '''
