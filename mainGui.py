@@ -141,6 +141,16 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelNetworkType.setGeometry(QtCore.QRect(30, 105, 121, 16))
         self.labelNetworkType.setObjectName("labelNetworkType")
         #->
+        self.widgetWayOne = QtWidgets.QWidget(self.tab_2)
+        self.widgetWayOne.setGeometry(QtCore.QRect(220, 40, 900, 80))
+        self.widgetWayOne.setObjectName("widgetWayOne")
+        self.widgetWayOne.setStyleSheet("background-color:#DCDCDC")
+
+        self.widgetWayTwo = QtWidgets.QWidget(self.tab_2)
+        self.widgetWayTwo.setGeometry(QtCore.QRect(460, 145, 450, 80))
+        self.widgetWayTwo.setObjectName("widgetWayTwo")
+        self.widgetWayTwo.setStyleSheet("background-color:#C0C0C0")
+
         self.lblbatch_size = QtWidgets.QLabel(self.tab_2)
         self.lblbatch_size.setGeometry(QtCore.QRect(240, 50, 121, 16))
         self.lblbatch_size.setObjectName("lblbatch_size")
@@ -191,19 +201,19 @@ class Ui_SignalProcessing(QMainWindow):
         self.lblSaveWts.setObjectName("lblSaveWts")
         #->
         self.btnLoadWeights = QtWidgets.QPushButton(self.tab_2)
-        self.btnLoadWeights.setGeometry(QtCore.QRect(270, 180, 121,31))
+        self.btnLoadWeights.setGeometry(QtCore.QRect(470, 180, 121,31))
         self.btnLoadWeights.setObjectName("Load weights")
 
         self.labelLoadWeights = QtWidgets.QLabel(self.tab_2)
-        self.labelLoadWeights.setGeometry(QtCore.QRect(240, 152, 220, 25))
+        self.labelLoadWeights.setGeometry(QtCore.QRect(470, 152, 220, 25))
         self.labelLoadWeights.setObjectName("labelLoadWeights")
         #->
         self.btnLoadBestWeights = QtWidgets.QPushButton(self.tab_2)
-        self.btnLoadBestWeights.setGeometry(QtCore.QRect(500, 180, 121,31))
+        self.btnLoadBestWeights.setGeometry(QtCore.QRect(740, 180, 121,31))
         self.btnLoadBestWeights.setObjectName("LoadBestweights")
 
         self.labelLoadBestWeights = QtWidgets.QLabel(self.tab_2)
-        self.labelLoadBestWeights.setGeometry(QtCore.QRect(470, 152, 220, 25))
+        self.labelLoadBestWeights.setGeometry(QtCore.QRect(740, 152, 220, 25))
         self.labelLoadBestWeights.setObjectName("labelLoadBestWeights")
 
         style = {"color":"w", "font-size":"12px"}
@@ -212,25 +222,28 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetPlotAcc.setGeometry(QtCore.QRect(10, 260, 415, 415))
         self.widgetPlotAcc.setTitle("Accuracy Plot", color="w")
         self.widgetPlotAcc.addLegend(offset = (260,0))
-        self.widgetPlotAcc.getPlotItem().setLabel(axis = "left", title="Accuracy ->",**style)
-        self.widgetPlotAcc.getPlotItem().setLabel(axis = "bottom", title="Epochs ->", **style)    #not working
+        
+        #self.widgetPlotAcc.getPlotItem().setLabel(axis = "left", title="Accuracy ->",**style)
+        #self.widgetPlotAcc.getPlotItem().setLabel(axis = "bottom", title="Epochs ->", **style)    #not working
         self.widgetPlotAcc.getPlotItem().showGrid(x=True, y=True, alpha=0.7)
         self.trainAccPlot = self.widgetPlotAcc.plot(np.linspace(1, len(self.trainAcc), len(self.trainAcc)),
                                                          self.trainAcc, pen = self.redPen, name="Train acc"  )
         self.valAccPlot = self.widgetPlotAcc.plot(np.linspace(1, len(self.valAcc), len(self.valAcc)),
                                                          self.valAcc, pen = self.greenPen, name = "Val acc"  )
+        self.widgetPlotAcc.getPlotItem().setLabel('bottom', "Number of Epochs")
+        self.widgetPlotAcc.getPlotItem().setLabel('left', "Accuracy")
         # self.widgetPlotAcc.getPlotItem().setLabel(axis = "left", title="Accuracy ->",**style)
         # self.widgetPlotAcc.getPlotItem().setLabel(axis = "bottom", title="Epochs ->", **style)
-        self.widgetPlotAcc.getPlotItem().showGrid(x=True, y=True, alpha=0.7)
+        #self.widgetPlotAcc.getPlotItem().showGrid(x=True, y=True, alpha=0.7)
         # self.widgetPlotAcc.getPlotItem().showLabel('left', show=True)     #not working
-        font = QtGui.QFont()
-        font.setPixelSize(12)
+        #font = QtGui.QFont()
+        #font.setPixelSize(12)
         
-        self.widgetPlotAcc.getPlotItem().getAxis("bottom").tickFont = font
-        self.widgetPlotAcc.getPlotItem().getAxis("bottom").setStyle(tickTextOffset=20)
+        #self.widgetPlotAcc.getPlotItem().getAxis("bottom").tickFont = font
+        #self.widgetPlotAcc.getPlotItem().getAxis("bottom").setStyle(tickTextOffset=20)
 
-        self.widgetPlotAcc.getPlotItem().showLabel('left', show=True)        #not working
-        self.widgetPlotAcc.getPlotItem().showLabel('bottom', show=True)
+        #self.widgetPlotAcc.getPlotItem().showLabel('left', show=True)        #not working
+        #self.widgetPlotAcc.getPlotItem().showLabel('bottom', show=True)
         # self.widgetPlotAcc.getPlotItem().showLabel('bottom', show=True)
 
         #->
@@ -242,16 +255,17 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetPlotLoss.setObjectName("widgetPlotLoss")
         self.widgetPlotLoss.addLegend(offset = (260,-300))
         # self.widgetPlotLoss.getPlotItem()
-        self.widgetPlotLoss.getPlotItem().setLabel(axis = "left", title="Loss ->",**style)        #not working
-        self.widgetPlotLoss.getPlotItem().setLabel(axis = "bottom", title="Epochs ->", **style)
+        #self.widgetPlotLoss.getPlotItem().setLabel(axis = "left", title="Loss ->",**style)        #not working
+        #self.widgetPlotLoss.getPlotItem().setLabel(axis = "bottom", title="Epochs ->", **style)
 
         self.widgetPlotLoss.getPlotItem().showGrid(x=True, y=True, alpha=0.7)
         self.trainLossPlot = self.widgetPlotLoss.plot(np.linspace(0, len(self.trainLoss), len(self.trainLoss)),
                                                          self.trainLoss, pen = self.redPen , name = "Train loss" )
         self.valLossPlot = self.widgetPlotLoss.plot(np.linspace(0, len(self.valLoss), len(self.valLoss)),
                                                          self.valLoss, pen = self.greenPen  , name="Val loss")
-        self.widgetPlotLoss.getPlotItem().showLabel('left', show=True)        #not working
-        self.widgetPlotLoss.getPlotItem().showLabel('bottom', show=True)
+
+        self.widgetPlotLoss.getPlotItem().setLabel('bottom', "Number of Epochs")
+        self.widgetPlotLoss.getPlotItem().setLabel('left', "Loss")
         #->
         self.tabWidget.addTab(self.tab_2, "")
 
