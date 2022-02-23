@@ -1,14 +1,16 @@
 from importlib import import_module
+from statistics import mode
 from PyQt5.QtWidgets import QFileDialog
 from scipy import io, signal
 import numpy as np
 from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
 import os
+import torch
 from PIL import Image
 from Models.models import NeuralNetworkClassifier
 from Models.utils import train_dataloader
-
+import pickle
 
 """
 Function: Open QFileDialog to address and open the ECG signals 
@@ -30,13 +32,14 @@ def LoadECGData(self):
 
     lbls = [lbls[i][0][0] for i in range(lbls.size)]
 
-    self.sig_ARR, lab_ARR = ecgSignal[0:95], lbls[0:95]
-    self.sig_CHF, lab_CHF = ecgSignal[96:125], lbls[96:125]
-    self.sig_NSR, lab_NSR = ecgSignal[125:161], lbls[126:161]
+    self.sig_ARR, _ = ecgSignal[0:95], lbls[0:95]
+    self.sig_CHF, _ = ecgSignal[96:125], lbls[96:125]
+    self.sig_NSR, _ = ecgSignal[125:161], lbls[126:161]
 
-    print(self.sig_NSR)
-    print(self.sig_ARR)
-    print(self.sig_CHF)
+    print("\n--> Data successfully loaded!")
+    print("Number of ARR samples: ", self.sig_ARR.shape[0])
+    print("Number of NSR samples: ", self.sig_NSR.shape[0])
+    print("Number of CHF samples: ", self.sig_CHF.shape[0])
 
 
 """
@@ -50,12 +53,13 @@ returned : Nothing
 
 def plot_signal_rnd(self):
 
-    if int(self.txtLenSignal.toPlainText()) >= 0 and int(self.txtLenSignal.toPlainText()) <= 60000:
-        if int(self.txtLenSignalEnd.toPlainText()) > int(self.txtLenSignal.toPlainText()) and int(self.txtLenSignalEnd.toPlainText()) <= 60000 :
+    if int(self.txtSigStart.toPlainText()) >= 0 and int(self.txtSigStart.toPlainText()) <= 60000:
+        if(    (int(self.txtSigEnd.toPlainText()) > int(self.txtSigStart.toPlainText())) 
+                                                      and int(self.txtSigEnd.toPlainText()) <= 60000    ):
 
-            lengthStart = int(self.txtLenSignal.toPlainText())
-            lengthEnd = int(self.txtLenSignalEnd.toPlainText())
-            Signals = creatRndPlotSignal(self.comboBox.currentIndex(), self.sig_ARR, self.sig_CHF, self.sig_NSR, lengthStart, lengthEnd)
+            lengthStart = int(self.txtSigStart.toPlainText())
+            lengthEnd = int(self.txtSigEnd.toPlainText())
+            Signals = creatRndPlotSignal(self.selectSig.currentIndex(), self.sig_ARR, self.sig_CHF, self.sig_NSR, lengthStart, lengthEnd)
 
             sig_plot = Signals[0]   # sig_plot
             #sig_plot = sig_plot[0:int(self.txtLenSignal.toPlainText())]
@@ -146,10 +150,10 @@ def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
         sigf = -1 * sigf
 
     cwt = signal.cwt(sig, signal.morlet2, widths=np.arange(1,81,80/1000),
-                     w=8)  # cwtf is complexe number and it should be plotted as abs value
+                     w=3.5)  # cwtf is complex number and it should be plotted as abs value
     
     cwtf = signal.cwt(sigf, signal.morlet2, widths=np.arange(1,81,80/1000),
-                      w=8)  # cwtf is complexe number and it should be plotted as abs value
+                      w=3.5)  # cwtf is complex number and it should be plotted as abs value
     cwt = np.abs(cwt)
     cwtf = np.abs(cwtf)
 
@@ -161,23 +165,60 @@ def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
     
 
 def trainNetwork(self):
-    model = NeuralNetworkClassifier(self.comboBox_2.currentText())
-    dataloader = train_dataloader(input_size = 224, dataset_path="images", batch_size=int(self.QCombobatch_size.currentText())) # add Qcombox for batch size
-    model.initialize_model(num_classes=3)
-    model, self.history = model.start_training(dataloaders=dataloader, num_epochs=int(self.txtNum_epochs.toPlainText()), save_weights= True, weights_path="Weights",
-                                                 feature_extract=True, learning_rate=float(self.QComboBoxRate.currentText()))
+    self.batch_size=int(self.QCombobatch_size.currentText())
+    self.num_epochs=int(self.txtNum_epochs.toPlainText())
+    self.learning_rate=float(self.QComboBoxRate.currentText())
+    model_name = self.NetworkType.currentText()
+    print(self.batch_size, self.num_epochs, self.learning_rate     )
+    classifier = NeuralNetworkClassifier(model_name=model_name)
+    dataloader = train_dataloader(input_size = 224, dataset_path="images", batch_size=self.batch_size) # add Qcombox for batch size
+    classifier.initialize_model(num_classes=3)
+    self.model, self.history, self.weights, self.best_weights = classifier.start_training(dataloaders=dataloader, 
+                                    num_epochs=self.num_epochs,learning_rate=self.learning_rate)
 
-
-
-    # This Value will goes to the plot 
+            # This Value will goes to the plot 
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
+    plotAccVal = self.history["val"]["acc"]
+    plotLossVal = self.history["val"]["loss"]
+    self.trainAccPlot.setData(plotAccTrain)
+    self.valAccPlot.setData(plotAccVal)
+    self.trainLossPlot.setData(plotLossTrain)
+    self.valLossPlot.setData(plotLossVal)
+    
+def save_weights(self):
+    weights_path = os.path.join("Weights", self.model._get_name())
+    os.makedirs(weights_path, exist_ok=True)
+    torch.save(self.weights, os.path.join(weights_path,"weights.pth"))
+    torch.save(self.best_weights, os.path.join(weights_path,"best_weights.pth"))
+    with open(os.path.join("Weights", self.model._get_name(),"model_hist.pkl"), 'wb') as f:
+        pickle.dump(self.history, f)
+    path = os.path.join("Weights", self.model._get_name(),"model_params.npy")
+    params = [self.batch_size, self.num_epochs, self.learning_rate]
+    np.save(path, params)
+    print("\n--> Saved weights and model history successfully.\n")
 
-
+def load_weights(self, kind:str):
+    model_name = self.NetworkType.currentText()
+    classifier = NeuralNetworkClassifier(model_name=model_name)
+    classifier.initialize_model(num_classes=3)
+    if kind == "weights":
+        weights = torch.load(os.path.join("Weights", classifier.model._get_name(),"weights.pth"))
+        
+    elif kind == "best":
+        weights = torch.load(os.path.join("Weights", classifier.model._get_name(),"best_weights.pth"))
+    classifier.model.load_state_dict(weights)
+    with open(os.path.join("Weights", classifier.model._get_name(),"model_hist.pkl"), 'rb') as f:
+        self.history = pickle.load(f)
+    
+    plotAccTrain = self.history["train"]["acc"]
+    plotLossTrain = self.history["train"]["loss"]
     plotAccVal = self.history["val"]["acc"]
     plotLossVal = self.history["val"]["loss"]
 
+    self.trainAccPlot.setData(plotAccTrain)
+    self.valAccPlot.setData(plotAccVal)
+    self.trainLossPlot.setData(plotLossTrain)
+    self.valLossPlot.setData(plotLossVal)
 
-
-    '''
-    '''
+    print("--> Weights and training curves loaded successfully.")
