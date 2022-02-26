@@ -10,10 +10,15 @@ def train_dataloader(input_size, dataset_path:str, batch_size:int = 32 ):
                         'train':transforms.Compose([
                             transforms.Resize(input_size),
                             transforms.ToTensor(),
+                            transforms.Normalize(   mean=[0.485, 0.456, 0.406],
+                                                    std=[0.229, 0.224, 0.225])
                         ]),
+
                         'val': transforms.Compose([
                             transforms.Resize(input_size),
                             transforms.ToTensor(),
+                            transforms.Normalize(   mean=[0.485, 0.456, 0.406],
+                                                    std=[0.229, 0.224, 0.225])    
                         ]),
                         }
     

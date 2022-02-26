@@ -1,15 +1,13 @@
 from __future__ import print_function
 from __future__ import division
-from audioop import bias
-from tabnanny import verbose
-from cv2 import inpaint
+from doctest import OutputChecker
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+from sklearn.utils.class_weight import compute_class_weight
 from torchvision import models
 import matplotlib.pyplot as plt
-from .utils import train_dataloader
 from torch.optim import lr_scheduler
 import time
 import os
@@ -27,22 +25,24 @@ class NeuralNetworkClassifier:
             self.model = models.squeezenet1_1(pretrained=True, progress=True)
             self.name = self.model._get_name()
         elif model_name.upper() == "googlenet".upper():
-            self.model = models.googlenet(pretrained=False, progress=True, init_weights=True)
+            self.model = models.googlenet(pretrained=False, progress=False, init_weights=True)
             self.name = self.model._get_name()
         elif model_name.upper() == "resnet".upper():
-            self.model = models.resnet18(pretrained=False, progress=True)
+            self.model = models.resnet18(pretrained=True, progress=False)
             self.name = self.model._get_name()
 
         self.input_size = 224
         # self.optimizer = None
         self.scheduler = None
-        self.criterion = nn.CrossEntropyLoss()
+        self.class_weights = None
+        self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     
     def initialize_model(self,num_classes:int = 3):
         if self.name.upper() == "alexnet".upper():
-            self.model.classifier[0] = nn.Dropout(p=0.7, inplace=False)
+            self.model.classifier[0] = nn.Dropout(p=0.65, inplace=True)
+            self.model.classifier[3] = nn.Dropout(p=0.6, inplace=False)
             n_feat = self.model.classifier[6].in_features
             self.model.classifier[6] = nn.Linear(n_feat, num_classes)
 
@@ -51,16 +51,17 @@ class NeuralNetworkClassifier:
             self.model.num_classes = num_classes
 
         elif self.name.upper() == "googlenet".upper():
-
+            self.model.dropout = nn.Dropout(p=0.6, inplace=False)
             n_feat = self.model.fc.in_features
             self.model.fc = nn.Linear(n_feat, num_classes)
-
         elif self.name.upper() == "resnet".upper():
-            n_feat = self.model.fc.in_features
             self.model.fc = nn.Sequential(
-                                    nn.Dropout(0.65),
-                                    nn.Linear(n_feat, out_features=3, bias=False)
-                                     )
+                        nn.Dropout(p=0.65),
+                        nn.Linear(in_features=512, out_features=num_classes, bias=True))
+
+
+
+                                     
         # print(self.model.eval())
         self.model = self.model.to(self.device)
 
@@ -68,9 +69,8 @@ class NeuralNetworkClassifier:
     def start_training(self, dataloaders, num_epochs, learning_rate:float):
         for param in self.model.parameters():
             param.requires_grad = True
-
         optimizer = optim.SGD(self.model.parameters(), lr=learning_rate, momentum=0.9)
-        scheduler = lr_scheduler.StepLR(optimizer=optimizer, step_size=6, gamma=0.5, verbose=True)
+        scheduler = lr_scheduler.StepLR(optimizer=optimizer, step_size=8, gamma=0.3, verbose=True)
 
         since = time.time()
         history = {"train":{"loss":[], "acc":[]}, "val": {"loss":[], "acc":[]}}
@@ -92,23 +92,40 @@ class NeuralNetworkClassifier:
                 running_corrects = 0
 
                 for inputs, labels in dataloaders[phase]:
+                    # counts= {x:y for x in [0,1,2] for y in sum(labels.numpy() == x)}
+                    # weights = compute_class_weight(class_weight='balanced', classes= [0,1,2],y= labels.numpy())
+                    weights = np.array([sum((labels.numpy() == t)) for t in [0,1,2] ])
+                    weights = weights + 0.00001
+                    # print(weights)
+                    weights = 1./ np.array(weights) 
+                    # print(weights)
+                    self.class_weights = torch.FloatTensor(weights).cuda()
+                    self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
+                    # if self.model._get_name() == "GoogLeNet":
+                    #     inputs = inputs[0]
+                        
                     inputs = inputs.to(self.device)
                     labels = labels.to(self.device)
+                    
                     # print("Labels:", labels)
                     optimizer.zero_grad()
 
                     with torch.set_grad_enabled(phase== "train"):
                         outputs = self.model(inputs)
+                        if self.name == "GoogLeNet" and phase == "train":
+                            # outputs = outputs[0]
+                            outputs = outputs.logits
                         loss = self.criterion(outputs, labels)
                         _, preds = torch.max(outputs, 1)
 
                         if phase == "train":
                             loss.backward()
                             optimizer.step()
-                    
+
                     # print("Prediction:", preds,"\n")
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
+                print(labels.cpu().numpy())  
                 if phase == "train":
                     scheduler.step()
                 epoch_loss = running_loss / len(dataloaders[phase].dataset)
@@ -173,4 +190,4 @@ if __name__ == "__main__":
     #                                 learning_rate=0.003, save_weights=True, weights_path="Weights")
 
 
-    print(models.resnet18().eval())
+    print( models.resnet18().eval())

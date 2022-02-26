@@ -1,5 +1,3 @@
-from importlib import import_module
-from statistics import mode
 from PyQt5.QtWidgets import QFileDialog
 from scipy import io, signal
 import numpy as np
@@ -7,6 +5,7 @@ from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
 import os
 import torch
+from torchvision import transforms
 from PIL import Image
 from Models.models import NeuralNetworkClassifier
 from Models.utils import train_dataloader
@@ -165,17 +164,19 @@ def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
     
 
 def trainNetwork(self):
+    torch.cuda.empty_cache()
     self.batch_size=int(self.QCombobatch_size.currentText())
     self.num_epochs=int(self.txtNum_epochs.toPlainText())
     self.learning_rate=float(self.QComboBoxRate.currentText())
     model_name = self.NetworkType.currentText()
+
     print(self.batch_size, self.num_epochs, self.learning_rate     )
     classifier = NeuralNetworkClassifier(model_name=model_name)
     dataloader = train_dataloader(input_size = 224, dataset_path="images", batch_size=self.batch_size) # add Qcombox for batch size
     classifier.initialize_model(num_classes=3)
     self.model, self.history, self.weights, self.best_weights = classifier.start_training(dataloaders=dataloader, 
                                     num_epochs=self.num_epochs,learning_rate=self.learning_rate)
-
+    self.model.load_state_dict(self.weights)
             # This Value will goes to the plot 
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
@@ -185,6 +186,10 @@ def trainNetwork(self):
     self.valAccPlot.setData(plotAccVal)
     self.trainLossPlot.setData(plotLossTrain)
     self.valLossPlot.setData(plotLossVal)
+    self.ValAcc = plotAccVal[-1]
+    self.TrainAcc = plotAccTrain[-1]
+
+    print_model_stats(self)
     
 def save_weights(self):
     weights_path = os.path.join("Weights", self.model._get_name())
@@ -194,22 +199,33 @@ def save_weights(self):
     with open(os.path.join("Weights", self.model._get_name(),"model_hist.pkl"), 'wb') as f:
         pickle.dump(self.history, f)
     path = os.path.join("Weights", self.model._get_name(),"model_params.npy")
-    params = [self.batch_size, self.num_epochs, self.learning_rate]
+    params = [self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size]
     np.save(path, params)
-    print("\n--> Saved weights and model history successfully.\n")
+    print("\n--> Saved weights and model history and train-parameters successfully.\n")
 
 def load_weights(self, kind:str):
+    self.model = None
+    self.weights = None
+    torch.cuda.empty_cache()
     model_name = self.NetworkType.currentText()
-    classifier = NeuralNetworkClassifier(model_name=model_name)
-    classifier.initialize_model(num_classes=3)
+    self.classifier = NeuralNetworkClassifier(model_name=model_name)
+    self.classifier.initialize_model(num_classes=3)
+    self.model = self.classifier.model
+    #Load Weights
     if kind == "weights":
-        weights = torch.load(os.path.join("Weights", classifier.model._get_name(),"weights.pth"))
-        
+        self.weights = torch.load(os.path.join("Weights", self.model._get_name(),"weights.pth"))
+
     elif kind == "best":
-        weights = torch.load(os.path.join("Weights", classifier.model._get_name(),"best_weights.pth"))
-    classifier.model.load_state_dict(weights)
-    with open(os.path.join("Weights", classifier.model._get_name(),"model_hist.pkl"), 'rb') as f:
+        self.weights = torch.load(os.path.join("Weights", self.model._get_name(),"best_weights.pth"))
+    self.model.load_state_dict(self.weights)
+    self.model.eval()
+    #Load the training and accuracy curves
+    with open(os.path.join("Weights", self.model._get_name(),"model_hist.pkl"), 'rb') as f:
         self.history = pickle.load(f)
+    #Load Model Parameters
+    path = os.path.join("Weights", self.model._get_name(),"model_params.npy")
+    self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size = [str(x) for x in np.load(path)]
+    
     
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
@@ -220,5 +236,60 @@ def load_weights(self, kind:str):
     self.valAccPlot.setData(plotAccVal)
     self.trainLossPlot.setData(plotLossTrain)
     self.valLossPlot.setData(plotLossVal)
-
+    #print model stats
+    print_model_stats(self)
     print("--> Weights and training curves loaded successfully.")
+
+def validate_test_set(self):
+    signals = ["ARR", "CHF", "NSR"]
+    acc = [0,0,0]
+    for i, sig in enumerate(signals):
+        img_loc = os.listdir(os.path.join("images","test", sig))
+        dir_len = len(img_loc)
+
+        for img in img_loc:
+            img = os.path.join("images","test",sig, img)
+            img = Image.open(img)
+            totensor = transforms.Compose([
+                        transforms.ToTensor(),
+                        transforms.Normalize(   mean=[0.485, 0.456, 0.406],
+                                                    std=[0.229, 0.224, 0.225]) ])
+            img = totensor(img)
+            img = torch.unsqueeze(img, 0).cuda()
+            try:
+                # if self.model._get_name() == "GoogLeNet":
+                #     output = self.model(img)
+                #     output = output.logits
+                # else:
+                output = self.model(img)
+                pred = torch.argmax(output)
+                if pred.data == i:
+                    acc[i] = acc[i] + 1 
+                excp = None
+            except Exception as e:
+                excp = e
+                pass
+            # print(pred.data == 0)
+        acc[i] /= dir_len
+    self.txtAccARR.setText(":  "+"{:.4f}".format(round(acc[0], 4)))    
+    self.txtAccCHF.setText(":  "+"{:.4f}".format(round(acc[1], 4)))
+    self.txtAccNSR.setText(":  "+"{:.4f}".format(round(acc[2], 4)))
+
+    if excp:
+        print(excp)
+        print("\n\n--> Weights are not loaded yet.\n\tOptions:\n1. Train the model first -> Test\n2. Load Weights -> Test ")
+    print(acc)
+
+def print_model_stats(self):
+    self.txtModel.setText(":  "+self.model._get_name())
+    self.txtLR.setText(":  "+str(self.learning_rate))    
+    self.txtEpochs.setText(":  "+str(int(float(self.num_epochs))) )
+    self.txtBS.setText(":  "+str(int(float(self.batch_size)))   )
+    self.txtValAcc.setText(":  "+"{:.4f}".format(round(float(self.ValAcc), 4)) )
+    self.txtTrainAcc.setText(":  "+"{:.4f}".format(round(float(self.TrainAcc), 4)) )
+
+
+            
+            
+
+
