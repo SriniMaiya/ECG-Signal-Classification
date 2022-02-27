@@ -3,8 +3,11 @@ from scipy import io, signal
 import numpy as np
 from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+import seaborn as sns
 import os
 import torch
+import matplotlib.pyplot as plt
 from torchvision import transforms
 from PIL import Image
 from Models.models import NeuralNetworkClassifier
@@ -243,6 +246,8 @@ def load_weights(self, kind:str):
 def validate_test_set(self):
     signals = ["ARR", "CHF", "NSR"]
     acc = [0,0,0]
+    preds = []
+    labels = []
     for i, sig in enumerate(signals):
         img_loc = os.listdir(os.path.join("images","test", sig))
         dir_len = len(img_loc)
@@ -257,28 +262,56 @@ def validate_test_set(self):
             img = totensor(img)
             img = torch.unsqueeze(img, 0).cuda()
             try:
-                # if self.model._get_name() == "GoogLeNet":
-                #     output = self.model(img)
-                #     output = output.logits
-                # else:
+
                 output = self.model(img)
                 pred = torch.argmax(output)
+                labels.append(i)
+                preds.append(pred.cpu().numpy())
+
                 if pred.data == i:
                     acc[i] = acc[i] + 1 
                 excp = None
             except Exception as e:
                 excp = e
                 pass
-            # print(pred.data == 0)
+            # print(pred.data == 0)   
         acc[i] /= dir_len
     self.txtAccARR.setText(":  "+"{:.4f}".format(round(acc[0], 4)))    
     self.txtAccCHF.setText(":  "+"{:.4f}".format(round(acc[1], 4)))
     self.txtAccNSR.setText(":  "+"{:.4f}".format(round(acc[2], 4)))
 
     if excp:
-        print(excp)
-        print("\n\n--> Weights are not loaded yet.\n\tOptions:\n1. Train the model first -> Test\n2. Load Weights -> Test ")
+        print("\n\n Error:",excp)
+        print("\n--> Weights are not loaded yet.\n\tOptions:\n1. Train the model first -> Test\n2. Load Weights -> Test ")
     print(acc)
+    preds = np.array(preds)
+    labels = np.array(labels)
+    # print(preds)
+    # print(labels)
+    cnf_mat = confusion_matrix(labels, preds)
+    ax = plt.subplot()    
+    sns.heatmap(cnf_mat, cbar=False, ax=ax, cmap = "Blues", fmt="g", xticklabels=["ARR", "CHF", "NSR"],
+                            yticklabels=["ARR", "CHF", "NSR"], annot=True, annot_kws={'size':'15'} )
+    sns.set(font_scale = 3.0)
+    ax.set_xlabel("Predicted labels", {'size':'15'})
+    ax.set_ylabel("True labels", {'size':'15'})
+    ax.set_title("Confusion Matrix", {'size':'15'})
+    ax.tick_params(axis='both', which='major', labelsize=15)
+  
+
+    plt.plot()
+    pth = os.path.join("Weights", self.model._get_name(), "ConfMat"+self.model._get_name() +".jpg")
+    plt.tight_layout()
+    plt.savefig(pth, pad_inches = 0, dpi=512/4)
+    img = Image.open(pth)
+    img = np.array(img.resize((1024, 1024), Image.LANCZOS))
+    img = np.rot90(img,3)
+    img = img[80:-80]
+
+    plt.close()
+    self.conf_Plt.setImage(img)
+    self.conf_Plt.render()
+
 
 def print_model_stats(self):
     self.txtModel.setText(":  "+self.model._get_name())

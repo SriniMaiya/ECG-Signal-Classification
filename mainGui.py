@@ -8,6 +8,7 @@ Date : 14.Feb.2022
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
+from torch import layout
 from GuiControlCommand import *
 import pyqtgraph as pg
 import sys
@@ -28,6 +29,7 @@ class Ui_SignalProcessing(QMainWindow):
 
         self.imgOne = pg.ImageItem()
         self.imgTwo = pg.ImageItem()
+        self.conf_Plt = pg.ImageItem()
 
         self.time = [0] * 1000
 
@@ -47,6 +49,8 @@ class Ui_SignalProcessing(QMainWindow):
         self.weights = None
         self.best_weights = None
         self.history = None
+        
+        
 
         self.setupUi()
 
@@ -57,13 +61,13 @@ class Ui_SignalProcessing(QMainWindow):
         ''' define Windows Size: It can be move to other section as well base on u r need'''
         pg.setConfigOptions(antialias=True)
         SignalProcessing.setObjectName("SignalProcessing")
-        SignalProcessing.resize(1200, 760)
+        SignalProcessing.resize(1240, 800)
         
         self.centralwidget = QtWidgets.QWidget()  # SignalProcessing
         self.centralwidget.setObjectName("centralwidget")
 
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 1380, 900))
+        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 1200, 760))
         self.tabWidget.setObjectName("tabWidget")
 
         self.tab = QtWidgets.QWidget()
@@ -133,97 +137,97 @@ class Ui_SignalProcessing(QMainWindow):
         #->
         networkType = ["AlexNet", "GoogLeNet", "SqueezeNet", "ResNet"]
         self.NetworkType = QtWidgets.QComboBox(self.tab_2)
-        self.NetworkType.setGeometry(QtCore.QRect(40, 125, 113, 32))
+        self.NetworkType.setGeometry(QtCore.QRect(10, 30, 113, 32))
         self.NetworkType.setObjectName("NetworkType")
         self.NetworkType.addItems(networkType)
 
         self.labelNetworkType = QtWidgets.QLabel(self.tab_2)
-        self.labelNetworkType.setGeometry(QtCore.QRect(30, 105, 121, 16))
+        self.labelNetworkType.setGeometry(QtCore.QRect(10, 10, 121, 16))
         self.labelNetworkType.setObjectName("labelNetworkType")
         #->
         self.widgetWayOne = QtWidgets.QWidget(self.tab_2)
-        self.widgetWayOne.setGeometry(QtCore.QRect(220, 40, 780, 80))
+        self.widgetWayOne.setGeometry(QtCore.QRect(130, 5, 515, 65))
         self.widgetWayOne.setObjectName("widgetWayOne")
-        self.widgetWayOne.setStyleSheet("background-color:#DCDCDC")
+        self.widgetWayOne.setStyleSheet("background-color:#cac0c0")
 
         self.lblbatch_size = QtWidgets.QLabel(self.tab_2)
-        self.lblbatch_size.setGeometry(QtCore.QRect(240, 50, 121, 16))
+        self.lblbatch_size.setGeometry(QtCore.QRect(135, 10, 70, 16))
         self.lblbatch_size.setObjectName("lblbatch_size")
         self.lblbatch_size.setText("Batch size:")
 
         listbatch_size = ["8","16", "32", "64"]
         self.QCombobatch_size = QtWidgets.QComboBox(self.tab_2)
-        self.QCombobatch_size.setGeometry(QtCore.QRect(240, 70, 113, 32))
+        self.QCombobatch_size.setGeometry(QtCore.QRect(135, 30, 70, 32))
         self.QCombobatch_size.setObjectName("QCombobatch_size")
         self.QCombobatch_size.addItems(listbatch_size)
         #->
         self.lblRate = QtWidgets.QLabel(self.tab_2)
-        self.lblRate.setGeometry(QtCore.QRect(410, 50, 121, 16))
+        self.lblRate.setGeometry(QtCore.QRect(220, 10, 100, 16))
         self.lblRate.setObjectName("lblRate")
         self.lblRate.setText("Learning rate:")
 
         listLr = ["0.0001", "0.0003", "0.001", "0.003", "0.01", "0.03"]
         self.QComboBoxRate = QtWidgets.QComboBox(self.tab_2)
-        self.QComboBoxRate.setGeometry(QtCore.QRect(410, 70, 113, 32))
+        self.QComboBoxRate.setGeometry(QtCore.QRect(220, 30, 100, 32))
         self.QComboBoxRate.setObjectName("QComboBoxRate")
         self.QComboBoxRate.addItems(listLr)
         #->
         self.lblnum_epochs = QtWidgets.QLabel(self.tab_2)
-        self.lblnum_epochs.setGeometry(QtCore.QRect(590, 50, 121, 16))
+        self.lblnum_epochs.setGeometry(QtCore.QRect(335, 10, 50, 20))
         self.lblnum_epochs.setObjectName("lblRate")
         self.lblnum_epochs.setText("Epochs:")
 
         self.txtNum_epochs = QtWidgets.QTextEdit(self.tab_2)
-        self.txtNum_epochs.setGeometry(QtCore.QRect(590, 70, 70, 30))
+        self.txtNum_epochs.setGeometry(QtCore.QRect(335, 30, 50, 32))
         self.txtNum_epochs.setObjectName("txtNum_epochs")
         self.txtNum_epochs.setText("10")
         #->
         self.btnTrain = QtWidgets.QPushButton(self.tab_2)
-        self.btnTrain.setGeometry(QtCore.QRect(710, 70, 113, 32))
+        self.btnTrain.setGeometry(QtCore.QRect(400, 30, 110, 32))
         self.btnTrain.setObjectName("btnTrain")
 
         self.labelTrain = QtWidgets.QLabel(self.tab_2)
-        self.labelTrain.setGeometry(QtCore.QRect(710, 40, 120, 32))
+        self.labelTrain.setGeometry(QtCore.QRect(400, 10, 110, 16))
         self.labelTrain.setObjectName("labelTrain")
+        self.labelTrain.setText("Train:")
         #->
         self.btnSaveWts = QtWidgets.QPushButton(self.tab_2)
-        self.btnSaveWts.setGeometry(QtCore.QRect(860, 70, 113, 32))
+        self.btnSaveWts.setGeometry(QtCore.QRect(525, 30, 113, 32))
         self.btnSaveWts.setObjectName("btnSaveWts")
         self.btnSaveWts.setText("Save")
 
         self.lblSaveWts = QtWidgets.QLabel(self.tab_2)
-        self.lblSaveWts.setGeometry(QtCore.QRect(860, 40, 120, 30))
+        self.lblSaveWts.setGeometry(QtCore.QRect(525, 10, 120, 20))
         self.lblSaveWts.setObjectName("lblSaveWts")
 
 
         self.widgetWayTwo = QtWidgets.QWidget(self.tab_2)
-        self.widgetWayTwo.setGeometry(QtCore.QRect(390, 145, 450, 80))
+        self.widgetWayTwo.setGeometry(QtCore.QRect(650, 5, 326, 65))
         self.widgetWayTwo.setObjectName("widgetWayTwo")
         self.widgetWayTwo.setStyleSheet("background-color:#C0C0C0")
         #->
         self.btnLoadWeights = QtWidgets.QPushButton(self.tab_2)
-        self.btnLoadWeights.setGeometry(QtCore.QRect(415, 180, 121,31))
+        self.btnLoadWeights.setGeometry(QtCore.QRect(660, 30, 120,32))
         self.btnLoadWeights.setObjectName("Load weights")
 
         self.labelLoadWeights = QtWidgets.QLabel(self.tab_2)
-        self.labelLoadWeights.setGeometry(QtCore.QRect(400, 152, 220, 25))
+        self.labelLoadWeights.setGeometry(QtCore.QRect(655, 10, 132, 20))
         self.labelLoadWeights.setObjectName("labelLoadWeights")
         #->
         self.btnLoadBestWeights = QtWidgets.QPushButton(self.tab_2)
-        self.btnLoadBestWeights.setGeometry(QtCore.QRect(680, 180, 121,31))
+        self.btnLoadBestWeights.setGeometry(QtCore.QRect(825, 30, 120,32))
         self.btnLoadBestWeights.setObjectName("LoadBestweights")
 
         self.labelLoadBestWeights = QtWidgets.QLabel(self.tab_2)
-        self.labelLoadBestWeights.setGeometry(QtCore.QRect(645, 152, 220, 25))
+        self.labelLoadBestWeights.setGeometry(QtCore.QRect(805, 10, 166, 20))
         self.labelLoadBestWeights.setObjectName("labelLoadBestWeights")
 
         #-> PLOTS
-        style = {"color":"w", "font-size":"12px"}
         self.widgetPlotAcc = pg.PlotWidget(self.tab_2)
         self.widgetPlotAcc.setBackground("k")
-        self.widgetPlotAcc.setGeometry(QtCore.QRect(10, 260, 415, 415))
+        self.widgetPlotAcc.setGeometry(QtCore.QRect(10, 120, 375, 375))
         self.widgetPlotAcc.setTitle("Accuracy Plot", color="w")
-        self.widgetPlotAcc.addLegend(offset = (260,0))       
+        self.widgetPlotAcc.addLegend(offset = (220,0))       
         self.widgetPlotAcc.getPlotItem().showGrid(x=True, y=True, alpha=0.7)
         self.trainAccPlot = self.widgetPlotAcc.plot(np.linspace(1, len(self.trainAcc), len(self.trainAcc)),
                                                          self.trainAcc, pen = self.redPen, name="Train acc"  )
@@ -238,9 +242,9 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetPlotLoss.setTitle("Loss plot", color="w")
         self.widgetPlotAcc.setBackground("k")
         # self.widgetPlotLoss.setLabel("left", "Loss->", **style)
-        self.widgetPlotLoss.setGeometry(QtCore.QRect(450, 260, 415, 415))
+        self.widgetPlotLoss.setGeometry(QtCore.QRect(400, 120, 375,375))
         self.widgetPlotLoss.setObjectName("widgetPlotLoss")
-        self.widgetPlotLoss.addLegend(offset = (260,-300))
+        self.widgetPlotLoss.addLegend(offset = (215,-235))
         self.widgetPlotLoss.getPlotItem().showGrid(x=True, y=True, alpha=0.7)
         self.trainLossPlot = self.widgetPlotLoss.plot(np.linspace(0, len(self.trainLoss), len(self.trainLoss)),
                                                          self.trainLoss, pen = self.redPen , name = "Train loss" )
@@ -252,96 +256,134 @@ class Ui_SignalProcessing(QMainWindow):
 
         #-> TEST BUTTON
         self.btnTest = QtWidgets.QPushButton(self.tab_2)
-        self.btnTest.setGeometry(QtCore.QRect(1020, 125, 130, 30))
+        self.btnTest.setGeometry(QtCore.QRect(1020, 30, 130, 30))
         self.btnTest.setText("Test")
 
         self.lblTest = QtWidgets.QLabel(self.tab_2)
-        self.lblTest.setGeometry(QtCore.QRect(1010, 95, 170, 30))
+        self.lblTest.setGeometry(QtCore.QRect(1010, 10, 170, 20))
         self.lblTest.setText("Run model on Test set:")
 
         #-> MODEL STATS AND PARAMETERS
 
         self.widgetCBox = QtWidgets.QWidget(self.tab_2)
-        self.widgetCBox.setGeometry(QtCore.QRect(880, 260, 300, 440))
+        self.widgetCBox.setGeometry(QtCore.QRect(10, 510, 310, 210))
         self.widgetCBox.setObjectName("widgetWayOne")
         self.widgetCBox.setStyleSheet("background-color:#E5E4E2")
 
         self.lblModelStats = QtWidgets.QLabel(self.tab_2)
-        self.lblModelStats.setGeometry(QtCore.QRect(995, 265, 240, 20))
+        self.lblModelStats.setGeometry(QtCore.QRect(125, 520, 120, 20))
         self.lblModelStats.setText("Model Stats:")
         self.lblModelStats.setStyleSheet("font: 14pt" )
 
         self.lblMName = QtWidgets.QLabel(self.tab_2)
-        self.lblMName.setGeometry(QtCore.QRect(890, 280, 240, 20))
+        self.lblMName.setGeometry(QtCore.QRect(15, 555, 240, 20))
         self.lblMName.setText("Current model")
         
 
         self.txtModel = QtWidgets.QLabel(self.tab_2)
-        self.txtModel.setGeometry(QtCore.QRect(1000, 280, 120, 20))
+        self.txtModel.setGeometry(QtCore.QRect(125, 555, 120, 20))
         
         self.lblLR = QtWidgets.QLabel(self.tab_2)
-        self.lblLR.setGeometry(QtCore.QRect(890, 300, 240, 20))
+        self.lblLR.setGeometry(QtCore.QRect(15, 585, 240, 20))
         self.lblLR.setText("Learning rate")
 
         self.txtLR = QtWidgets.QLabel(self.tab_2)
-        self.txtLR.setGeometry(QtCore.QRect(1000, 300, 80, 20))
+        self.txtLR.setGeometry(QtCore.QRect(125, 585, 80, 20))
 
         self.lblEpochs = QtWidgets.QLabel(self.tab_2)
-        self.lblEpochs.setGeometry(QtCore.QRect(890, 320, 240, 20))
+        self.lblEpochs.setGeometry(QtCore.QRect(15, 615, 240, 20))
         self.lblEpochs.setText("Num of Epochs")
 
         self.txtEpochs = QtWidgets.QLabel(self.tab_2)
-        self.txtEpochs.setGeometry(QtCore.QRect(1000, 320, 80, 20))
+        self.txtEpochs.setGeometry(QtCore.QRect(125, 615, 80, 20))
 
         self.lblBS = QtWidgets.QLabel(self.tab_2)
-        self.lblBS.setGeometry(QtCore.QRect(890, 340, 240, 20))
+        self.lblBS.setGeometry(QtCore.QRect(15, 645, 240, 20))
         self.lblBS.setText("Batch size")
 
         self.txtBS = QtWidgets.QLabel(self.tab_2)
-        self.txtBS.setGeometry(QtCore.QRect(1000, 340, 80, 20))
+        self.txtBS.setGeometry(QtCore.QRect(125, 645, 80, 20))
+
+        self.widgetCBox = QtWidgets.QWidget(self.tab_2)
+        self.widgetCBox.setGeometry(QtCore.QRect(330, 510, 310, 210))
+        self.widgetCBox.setObjectName("widgetWayOne")
+        self.widgetCBox.setStyleSheet("background-color:#E5E4E2")
 
         self.valStats = QtWidgets.QLabel(self.tab_2)
-        self.valStats.setGeometry(QtCore.QRect(900, 370, 240, 20))
+        self.valStats.setGeometry(QtCore.QRect(435, 520, 240, 20))
         self.valStats.setText("Accuracy on:")
+        self.valStats.setStyleSheet("font: 14pt" )
         
         self.lblValAcc = QtWidgets.QLabel(self.tab_2)
-        self.lblValAcc.setGeometry(QtCore.QRect(890, 400, 240, 20))
+        self.lblValAcc.setGeometry(QtCore.QRect(335, 555, 240, 20))
         self.lblValAcc.setText("Validation set")
 
         self.txtValAcc = QtWidgets.QLabel(self.tab_2)
-        self.txtValAcc.setGeometry(QtCore.QRect(1000, 400, 80, 20))
+        self.txtValAcc.setGeometry(QtCore.QRect(445, 555, 80, 20))
 
         self.lblTrainAcc = QtWidgets.QLabel(self.tab_2)
-        self.lblTrainAcc.setGeometry(QtCore.QRect(890, 420, 240, 20))
+        self.lblTrainAcc.setGeometry(QtCore.QRect(335, 585, 240, 20))
         self.lblTrainAcc.setText("Training set")
 
         self.txtTrainAcc = QtWidgets.QLabel(self.tab_2)
-        self.txtTrainAcc.setGeometry(QtCore.QRect(1000, 420, 80, 20))
+        self.txtTrainAcc.setGeometry(QtCore.QRect(445, 585, 80, 20))
+
+        self.widgetCBox = QtWidgets.QWidget(self.tab_2)
+        self.widgetCBox.setGeometry(QtCore.QRect(650, 510, 310, 210))
+        self.widgetCBox.setObjectName("widgetWayOne")
+        self.widgetCBox.setStyleSheet("background-color:#E5E4E2")
 
         self.TestStats = QtWidgets.QLabel(self.tab_2)
-        self.TestStats.setGeometry(QtCore.QRect(900, 450, 300, 20))
+        self.TestStats.setGeometry(QtCore.QRect(670, 520, 300, 20))
         self.TestStats.setText("Classwise-Accuracy on Test Set:")
+        self.TestStats.setStyleSheet("font: 14pt" )
 
         self.lblARR = QtWidgets.QLabel(self.tab_2)
-        self.lblARR.setGeometry(QtCore.QRect(890, 480, 240, 20))
+        self.lblARR.setGeometry(QtCore.QRect(675, 555, 240, 20))
         self.lblARR.setText("Accuracy on ARR-Signals ")
 
         self.txtAccARR = QtWidgets.QLabel(self.tab_2)
-        self.txtAccARR.setGeometry(QtCore.QRect(1060, 480, 80, 20))
+        self.txtAccARR.setGeometry(QtCore.QRect(855, 555, 80, 20))
 
         self.lblCHF = QtWidgets.QLabel(self.tab_2)
-        self.lblCHF.setGeometry(QtCore.QRect(890, 500, 240, 20))
+        self.lblCHF.setGeometry(QtCore.QRect(675, 585, 240, 20))
         self.lblCHF.setText("Accuracy on CHF-Signals ")
 
         self.txtAccCHF = QtWidgets.QLabel(self.tab_2)
-        self.txtAccCHF.setGeometry(QtCore.QRect(1060, 500, 80, 20))
+        self.txtAccCHF.setGeometry(QtCore.QRect(855, 585, 80, 20))
 
         self.lblNSR = QtWidgets.QLabel(self.tab_2)
-        self.lblNSR.setGeometry(QtCore.QRect(890, 520, 240, 20))
+        self.lblNSR.setGeometry(QtCore.QRect(675, 615, 240, 20))
         self.lblNSR.setText("Accuracy on NSR-Signals ")
 
         self.txtAccNSR = QtWidgets.QLabel(self.tab_2)
-        self.txtAccNSR.setGeometry(QtCore.QRect(1060, 520, 80, 20))
+        self.txtAccNSR.setGeometry(QtCore.QRect(855, 615, 80, 20))
+
+        self.note = QtWidgets.QLabel(self.tab_2)
+        self.note.setGeometry(QtCore.QRect(15, 675, 300, 20))
+        self.note.setText("[ Updates on Training/click of 'Load' button ] ")
+
+        self.note = QtWidgets.QLabel(self.tab_2)
+        self.note.setGeometry(QtCore.QRect(335, 675, 300, 20))
+        self.note.setText("[ Updates on Training/click of 'Load' button ] ")
+
+        self.note = QtWidgets.QLabel(self.tab_2)
+        self.note.setGeometry(QtCore.QRect(675, 675, 250, 20))
+        self.note.setText("[ Updates on click of 'Test' button ] ")
+
+
+        self.widgetPlotConfMat = pg.PlotWidget(self.tab_2)
+        # self.widgetPlotConfMat.setTitle("Confusion Matrix", color="w")
+        self.widgetPlotConfMat.setBackground("k")
+        self.widgetPlotConfMat.setGeometry(QtCore.QRect(790, 120, 375,375))
+        self.widgetPlotConfMat.setObjectName("widgetPlotLoss")
+        self.widgetPlotConfMat.getPlotItem().hideAxis('bottom')
+        self.widgetPlotConfMat.getPlotItem().hideAxis('left')
+        self.widgetPlotConfMat.addItem(self.conf_Plt)
+        
+
+
+
 
         #->   TAB 3
         self.tabWidget.addTab(self.tab_2, "")
@@ -441,7 +483,6 @@ class Ui_SignalProcessing(QMainWindow):
         self.lblSaveWts.setText(_translate("SignalProcessing","Save weights:"))
         self.labelLoadBestWeights.setText(_translate("SignalProcessing", "Best-pretrained weights:"))
         #self.QComboBoxRate.setText(_translate("SignalProcessing", "Unknown"))
-        self.labelTrain.setText(_translate("SignalProcessing", "Train:")) 
         self.labelPredictSCL.setText(_translate("SignalProcessing", "Prediction From Scalogram"))
         self.labelNetworkType.setText(_translate("SignalProcessing", "Neural Network:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SignalProcessing", "Training Signal"))
