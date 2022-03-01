@@ -1,7 +1,8 @@
 """
-Note:
-This Code has been Writen by XXX and XXX students at Th-Rosenheim University
-The purpose of the Code is education and it is open source license
+NOTE:
+This Application has been writen by Srini Prakash Maiya  and Siamak Mirifar students at Rosenheim University of Applied Sciences
+The purpose of the Code is educational and it is open source license
+
 Course: Digital Signal Processing and Machine learning
 Date : 14.Feb.2022
 """
@@ -207,20 +208,20 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetWayTwo.setStyleSheet("background-color:#C0C0C0")
         #->
         self.btnLoadWeights = QtWidgets.QPushButton(self.tab_2)
-        self.btnLoadWeights.setGeometry(QtCore.QRect(660, 30, 120,32))
+        self.btnLoadWeights.setGeometry(QtCore.QRect(750, 30, 120,32))
         self.btnLoadWeights.setObjectName("Load weights")
 
         self.labelLoadWeights = QtWidgets.QLabel(self.tab_2)
-        self.labelLoadWeights.setGeometry(QtCore.QRect(655, 10, 132, 20))
+        self.labelLoadWeights.setGeometry(QtCore.QRect(750, 10, 132, 20))
         self.labelLoadWeights.setObjectName("labelLoadWeights")
         #->
-        self.btnLoadBestWeights = QtWidgets.QPushButton(self.tab_2)
-        self.btnLoadBestWeights.setGeometry(QtCore.QRect(825, 30, 120,32))
-        self.btnLoadBestWeights.setObjectName("LoadBestweights")
+        #self.btnLoadBestWeights = QtWidgets.QPushButton(self.tab_2)
+        #self.btnLoadBestWeights.setGeometry(QtCore.QRect(825, 30, 120,32))
+        #self.btnLoadBestWeights.setObjectName("LoadBestweights")
 
-        self.labelLoadBestWeights = QtWidgets.QLabel(self.tab_2)
-        self.labelLoadBestWeights.setGeometry(QtCore.QRect(805, 10, 166, 20))
-        self.labelLoadBestWeights.setObjectName("labelLoadBestWeights")
+        #self.labelLoadBestWeights = QtWidgets.QLabel(self.tab_2)
+        #self.labelLoadBestWeights.setGeometry(QtCore.QRect(805, 10, 166, 20))
+        #self.labelLoadBestWeights.setObjectName("labelLoadBestWeights")
 
         #-> PLOTS
         self.widgetPlotAcc = pg.PlotWidget(self.tab_2)
@@ -427,9 +428,9 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelPredictSGN.setObjectName("labelPredictSGN")
         
 
-        self.btnPredictSGN = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredictSGN.setGeometry(QtCore.QRect(300, 40, 113, 32))
-        self.btnPredictSGN.setObjectName("btnPredictSGN")
+       #self.btnPredictSGN = QtWidgets.QPushButton(self.tabPrediction)
+       #self.btnPredictSGN.setGeometry(QtCore.QRect(300, 40, 113, 32))
+       #self.btnPredictSGN.setObjectName("btnPredictSGN")
 
         self.widgetPredicSCL = pg.PlotWidget(self.tabPrediction)
         self.widgetPredicSCL.setGeometry(QtCore.QRect(30, 180, 400, 300))
@@ -477,18 +478,18 @@ class Ui_SignalProcessing(QMainWindow):
         #TAB2
         self.btnTrain.setText(_translate("SignalProcessing", "Start training "))
         self.btnLoadWeights.setText(_translate("SignalProcessing", "Load"))
-        self.btnLoadBestWeights.setText(_translate("SignalProcessing", "Load"))
+        #self.btnLoadBestWeights.setText(_translate("SignalProcessing", "Load"))
         self.labelLoadWeights.setText(_translate("SignalProcessing", "Pretrained weights:"))
         self.btnPredictSCL.setText(_translate("SignalProcessing", "Test Sclogram"))
         self.lblSaveWts.setText(_translate("SignalProcessing","Save weights:"))
-        self.labelLoadBestWeights.setText(_translate("SignalProcessing", "Best-pretrained weights:"))
+        #self.labelLoadBestWeights.setText(_translate("SignalProcessing", "Best-pretrained weights:"))
         #self.QComboBoxRate.setText(_translate("SignalProcessing", "Unknown"))
         self.labelPredictSCL.setText(_translate("SignalProcessing", "Prediction From Scalogram"))
         self.labelNetworkType.setText(_translate("SignalProcessing", "Neural Network:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SignalProcessing", "Training Signal"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPrediction), _translate("SignalProcessing", "Prediction"))
-        self.btnPredictSGN.setText("Test Signal")
-        self.labelPredictSGN.setText("Prediction From Signal")
+       #self.btnPredictSGN.setText("Test Signal")
+       #self.labelPredictSGN.setText("Prediction From Signal")
 
     def connect(self):
         ''' Define Signal and SLot fo GUI Connection '''
@@ -497,7 +498,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnPlotRnd.clicked.connect(self.plotSignal)
         self.btnLoadWeights.clicked.connect(self.slotLoadWWeights)
         self.btnSaveWts.clicked.connect(self.slotSaveWeights)
-        self.btnLoadBestWeights.clicked.connect(self.slotLoadBWeights)
+        #self.btnLoadBestWeights.clicked.connect(self.slotLoadBWeights)
         self.btnTest.clicked.connect(self.slotTest)
 
 
