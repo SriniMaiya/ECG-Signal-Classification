@@ -31,6 +31,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.imgOne = pg.ImageItem()
         self.imgTwo = pg.ImageItem()
         self.conf_Plt = pg.ImageItem()
+        self.predImg = pg.ImageItem()
 
         self.time = [0] * 1000
 
@@ -393,56 +394,63 @@ class Ui_SignalProcessing(QMainWindow):
         self.tabPrediction = QtWidgets.QWidget()
         self.tabPrediction.setObjectName("tabPrediction")
 
+        self.widgetCBox = QtWidgets.QWidget(self.tabPrediction)
+        self.widgetCBox.setGeometry(QtCore.QRect(700, 180, 240, 140))
+        self.widgetCBox.setObjectName("widgetWayOne")
+        self.widgetCBox.setStyleSheet("background-color:#E5E4E2")
+        
         self.labelResu = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResu.setGeometry(QtCore.QRect(650, 10, 151, 16))
+        self.labelResu.setGeometry(QtCore.QRect(720, 190, 200, 20))
         self.labelResu.setObjectName("labelResu")
-        self.labelResu.setText("Classwise Accuracy:")
+        self.labelResu.setText("Classwise Prediction:")
+        self.labelResu.setStyleSheet("font:14pt")
+
+
         
         self.labelResARR = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResARR.setGeometry(QtCore.QRect(650, 40, 121, 16))
+        self.labelResARR.setGeometry(QtCore.QRect(750, 230, 50, 16))
         self.labelResARR.setObjectName("labelResARR")
         self.labelResARR.setText("ARR")
+        self.labelResARR.setStyleSheet("font:11pt")
+
+        self.predARR  = QtWidgets.QLabel(self.tabPrediction)
+        self.predARR.setGeometry(810, 230, 65, 16 )
+        self.predARR.setStyleSheet("font:11pt")
          
         self.labelResCHF = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResCHF.setGeometry(QtCore.QRect(650, 70, 121, 16))
+        self.labelResCHF.setGeometry(QtCore.QRect(750, 260, 50, 16))
         self.labelResCHF.setObjectName("labelResCHF")
         self.labelResCHF.setText("CHF")
-        
+        self.labelResCHF.setStyleSheet("font:11pt")
+
+        self.predCHF  = QtWidgets.QLabel(self.tabPrediction)
+        self.predCHF.setGeometry(810, 260, 65, 16 )
+        self.predCHF.setStyleSheet("font:11pt")
+
         self.labelResNSR = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResNSR.setGeometry(QtCore.QRect(650, 100, 121, 16))
+        self.labelResNSR.setGeometry(QtCore.QRect(750, 290, 50, 16))
         self.labelResNSR.setObjectName("labelResNSR")
         self.labelResNSR.setText("NSR")
+        self.labelResNSR.setStyleSheet("font:11pt")
 
+        self.predNSR  = QtWidgets.QLabel(self.tabPrediction)
+        self.predNSR.setGeometry(810, 290, 65, 16 )
+        self.predNSR.setStyleSheet("font:11pt")
 
         self.labelPredictSCL = QtWidgets.QLabel(self.tabPrediction)
-        self.labelPredictSCL.setGeometry(QtCore.QRect(10, 10, 121, 16))
+        self.labelPredictSCL.setGeometry(QtCore.QRect(530, 75, 250, 20))
         self.labelPredictSCL.setObjectName("labelPredictSCL")
 
         self.btnPredictSCL = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredictSCL.setGeometry(QtCore.QRect(10, 40, 113, 32))
+        self.btnPredictSCL.setGeometry(QtCore.QRect(560, 100, 113, 32))
         self.btnPredictSCL.setObjectName("btnPredictSCL")
 
-
-        self.labelPredictSGN = QtWidgets.QLabel(self.tabPrediction)
-        self.labelPredictSGN.setGeometry(QtCore.QRect(300, 10, 121, 16))
-        self.labelPredictSGN.setObjectName("labelPredictSGN")
-        
-
-       #self.btnPredictSGN = QtWidgets.QPushButton(self.tabPrediction)
-       #self.btnPredictSGN.setGeometry(QtCore.QRect(300, 40, 113, 32))
-       #self.btnPredictSGN.setObjectName("btnPredictSGN")
-
         self.widgetPredicSCL = pg.PlotWidget(self.tabPrediction)
-        self.widgetPredicSCL.setGeometry(QtCore.QRect(30, 180, 400, 300))
+        self.widgetPredicSCL.setGeometry(QtCore.QRect(130, 180, 400, 400))
         self.widgetPredicSCL.setObjectName("widgetPredicSCL")
-        #self.firstSignalTwo = self.widgetPlotAcc.plot(self.time, self.sig_CHF, pen= self.redPen)
+        self.widgetPredicSCL.addItem(self.predImg)
 
-        
-        self.widgetPredicSGN = pg.PlotWidget(self.tabPrediction)
-        self.widgetPredicSGN.setGeometry(QtCore.QRect(450, 180, 400, 300))
-        self.widgetPredicSGN.setObjectName("widgetPredicSGN")
-        #self.firstSignalTwo = self.widgetPlotLoss.plot(self.time, self.sig_CHF, pen= self.redPen)
-        
+               
 
         self.tabWidget.addTab(self.tabPrediction, "")
 
@@ -500,6 +508,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnSaveWts.clicked.connect(self.slotSaveWeights)
         #self.btnLoadBestWeights.clicked.connect(self.slotLoadBWeights)
         self.btnTest.clicked.connect(self.slotTest)
+        self.btnPredictSCL.clicked.connect(self.slotPredSCL)
 
 
     # Slots are defined here
@@ -521,8 +530,13 @@ class Ui_SignalProcessing(QMainWindow):
     def slotSaveWeights(self):
         save_weights(self)
     
+    def slotPredSCL(self):
+        pred_SCL(self)
+
     def slotTest(self):
         validate_test_set(self)
+
+    
 
     # Test Function
     def test_func(self):

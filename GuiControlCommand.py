@@ -3,8 +3,8 @@ from scipy import io, signal
 import numpy as np
 from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
-# from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
-# import seaborn as sns
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+import seaborn as sns
 import os
 from torch import nn
 import torch
@@ -263,30 +263,22 @@ def validate_test_set(self):
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
             img = totensor(img)
-            img = torch.unsqueeze(img, 0)
-            try:
+            img = torch.unsqueeze(img, 0).cuda()
 
-                output = self.model(img)
-                pred = torch.argmax(output)
-                labels.append(i)
-                preds.append(pred.cpu().numpy())
+            output = self.model(img)
+            pred = torch.argmax(output)
+            labels.append(i)
+            preds.append(pred.cpu().numpy())
 
-                if pred.data == i:
-                    acc[i] = acc[i] + 1
-                excp = None
-            except Exception as e:
-                excp = e
-                pass
+            if pred.data == i:
+                acc[i] = acc[i] + 1
+ 
             # print(pred.data == 0)   
         acc[i] /= dir_len
     self.txtAccARR.setText(":  " + "{:.4f}".format(round(acc[0], 4)))
     self.txtAccCHF.setText(":  " + "{:.4f}".format(round(acc[1], 4)))
     self.txtAccNSR.setText(":  " + "{:.4f}".format(round(acc[2], 4)))
 
-    if excp:
-        print("\n\n Error:", excp)
-        print(
-            "\n--> Weights are not loaded yet.\n\tOptions:\n1. Train the model first -> Test\n2. Load Weights -> Test ")
     print(acc)
     preds = np.array(preds)
     labels = np.array(labels)
