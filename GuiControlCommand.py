@@ -3,8 +3,8 @@ from scipy import io, signal
 import numpy as np
 from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
-import seaborn as sns
+# from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+# import seaborn as sns
 import os
 import torch
 import matplotlib.pyplot as plt
@@ -20,6 +20,7 @@ base on the User decisions
 
 Connection: It is called from slot @XXX From Main Gui 
 """
+
 
 # HOw to open(Brows) data frmo PyQt
 def LoadECGData(self):
@@ -54,37 +55,37 @@ returned : Nothing
 
 
 def plot_signal_rnd(self):
-
     if int(self.txtSigStart.toPlainText()) >= 0 and int(self.txtSigStart.toPlainText()) <= 60000:
-        if(    (int(self.txtSigEnd.toPlainText()) > int(self.txtSigStart.toPlainText())) 
-                                                      and int(self.txtSigEnd.toPlainText()) <= 60000    ):
+        if ((int(self.txtSigEnd.toPlainText()) > int(self.txtSigStart.toPlainText()))
+                and int(self.txtSigEnd.toPlainText()) <= 60000):
 
             lengthStart = int(self.txtSigStart.toPlainText())
             lengthEnd = int(self.txtSigEnd.toPlainText())
-            Signals = creatRndPlotSignal(self.selectSig.currentIndex(), self.sig_ARR, self.sig_CHF, self.sig_NSR, lengthStart, lengthEnd)
+            Signals = creatRndPlotSignal(self.selectSig.currentIndex(), self.sig_ARR, self.sig_CHF, self.sig_NSR,
+                                         lengthStart, lengthEnd)
 
-            sig_plot = Signals[0]   # sig_plot
-            #sig_plot = sig_plot[0:int(self.txtLenSignal.toPlainText())]
+            sig_plot = Signals[0]  # sig_plot
+            # sig_plot = sig_plot[0:int(self.txtLenSignal.toPlainText())]
 
             sig_filter_plot = Signals[1]  # sig_filter_plot
-            #sig_filter_plot = sig_filter_plot[0:int(self.txtLenSignal.toPlainText())]
+            # sig_filter_plot = sig_filter_plot[0:int(self.txtLenSignal.toPlainText())]
 
             wavelet_plot = Signals[2]  # wavelet_plot
-            #wavelet_plot = wavelet_plot[0:int(self.txtLenSignal.toPlainText())]
+            # wavelet_plot = wavelet_plot[0:int(self.txtLenSignal.toPlainText())]
 
             wavelet_filter_plot = Signals[3]  # wavelet_filter_plot
-            #wavelet_filter_plot = wavelet_filter_plot[0:int(self.txtLenSignal.toPlainText())]
+            # wavelet_filter_plot = wavelet_filter_plot[0:int(self.txtLenSignal.toPlainText())]
 
-            self.time = range(0,  len(sig_plot), 1)
+            self.time = range(0, len(sig_plot), 1)
             self.time = list(self.time)
 
-            self.time = range(0,  len(sig_filter_plot), 1)
+            self.time = range(0, len(sig_filter_plot), 1)
             self.time = list(self.time)
 
-            self.time = range(0,  len(wavelet_plot), 1)
+            self.time = range(0, len(wavelet_plot), 1)
             self.time = list(self.time)
 
-            self.time = range(0,  len(wavelet_filter_plot), 1)
+            self.time = range(0, len(wavelet_filter_plot), 1)
             self.time = list(self.time)
 
             self.firstSignal.setData(sig_plot)
@@ -95,7 +96,6 @@ def plot_signal_rnd(self):
             print("Please Enter Correct Value")
     else:
         print("Please Enter Correct Value")
-
 
 
 """Function : High Pass FAlter signal 
@@ -121,8 +121,7 @@ def notch_filter(data, cutoff=60, fs=128, q=30):
 
 
 # Creat Random Variable for Plotting
-def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
-
+def creatRndPlotSignal(num, ARR, CHF, NSR, lengthStart, lengthEnd):
     ind_ARR = np.random.randint(low=0, high=ARR.shape[0])
     ind_CHF = np.random.randint(low=0, high=CHF.shape[0])
     ind_NSR = np.random.randint(low=0, high=NSR.shape[0])
@@ -143,44 +142,46 @@ def creatRndPlotSignal(num, ARR, CHF, NSR,lengthStart, lengthEnd):
         sigf = notch_filter(sigf)
         # lab = self.lab_NSR[ind_NSR]
 
-        #sig = sig[0:length]  # Can be
-        #sigf = sigf[0:length]
+        # sig = sig[0:length]  # Can be
+        # sigf = sigf[0:length]
 
     if np.max(sig) < np.abs(np.min(sig)):
         sig = -1 * sig
     if np.max(sigf) < np.abs(np.min(sigf)):
         sigf = -1 * sigf
 
-    cwt = signal.cwt(sig, signal.morlet2, widths=np.arange(1,81,80/1000),
+    cwt = signal.cwt(sig, signal.morlet2, widths=np.arange(1, 81, 80 / 1000),
                      w=3.5)  # cwtf is complex number and it should be plotted as abs value
-    
-    cwtf = signal.cwt(sigf, signal.morlet2, widths=np.arange(1,81,80/1000),
+
+    cwtf = signal.cwt(sigf, signal.morlet2, widths=np.arange(1, 81, 80 / 1000),
                       w=3.5)  # cwtf is complex number and it should be plotted as abs value
     cwt = np.abs(cwt)
     cwtf = np.abs(cwtf)
 
     cm = get_cmap('viridis')
-    cwt = np.rot90((cm(cwt)[:,:,:3]*255).astype(np.uint8))
-    cwtf = np.rot90((cm(cwtf)[:,:,:3]*255).astype(np.uint8))
-    
+    cwt = np.rot90((cm(cwt)[:, :, :3] * 255).astype(np.uint8))
+    cwtf = np.rot90((cm(cwtf)[:, :, :3] * 255).astype(np.uint8))
+
     return [sig, sigf, cwt, cwtf]
-    
+
 
 def trainNetwork(self):
     torch.cuda.empty_cache()
-    self.batch_size=int(self.QCombobatch_size.currentText())
-    self.num_epochs=int(self.txtNum_epochs.toPlainText())
-    self.learning_rate=float(self.QComboBoxRate.currentText())
+    self.batch_size = int(self.QCombobatch_size.currentText())
+    self.num_epochs = int(self.txtNum_epochs.toPlainText())
+    self.learning_rate = float(self.QComboBoxRate.currentText())
     model_name = self.NetworkType.currentText()
 
-    print(self.batch_size, self.num_epochs, self.learning_rate     )
+    print(self.batch_size, self.num_epochs, self.learning_rate)
     classifier = NeuralNetworkClassifier(model_name=model_name)
-    dataloader = train_dataloader(input_size = 224, dataset_path="images", batch_size=self.batch_size) # add Qcombox for batch size
+    dataloader = train_dataloader(input_size=224, dataset_path="images",
+                                  batch_size=self.batch_size)  # add Qcombox for batch size
     classifier.initialize_model(num_classes=3)
-    self.model, self.history, self.weights, self.best_weights = classifier.start_training(dataloaders=dataloader, 
-                                    num_epochs=self.num_epochs,learning_rate=self.learning_rate)
+    self.model, self.history, self.weights, self.best_weights = classifier.start_training(dataloaders=dataloader,
+                                                                                          num_epochs=self.num_epochs,
+                                                                                          learning_rate=self.learning_rate)
     self.model.load_state_dict(self.weights)
-            # This Value will goes to the plot 
+    # This Value will goes to the plot
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
     plotAccVal = self.history["val"]["acc"]
@@ -193,20 +194,22 @@ def trainNetwork(self):
     self.TrainAcc = plotAccTrain[-1]
 
     print_model_stats(self)
-    
+
+
 def save_weights(self):
     weights_path = os.path.join("Weights", self.model._get_name())
     os.makedirs(weights_path, exist_ok=True)
-    torch.save(self.weights, os.path.join(weights_path,"weights.pth"))
-    torch.save(self.best_weights, os.path.join(weights_path,"best_weights.pth"))
-    with open(os.path.join("Weights", self.model._get_name(),"model_hist.pkl"), 'wb') as f:
+    torch.save(self.weights, os.path.join(weights_path, "weights.pth"))
+    torch.save(self.best_weights, os.path.join(weights_path, "best_weights.pth"))
+    with open(os.path.join("Weights", self.model._get_name(), "model_hist.pkl"), 'wb') as f:
         pickle.dump(self.history, f)
-    path = os.path.join("Weights", self.model._get_name(),"model_params.npy")
+    path = os.path.join("Weights", self.model._get_name(), "model_params.npy")
     params = [self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size]
     np.save(path, params)
     print("\n--> Saved weights and model history and train-parameters successfully.\n")
 
-def load_weights(self, kind:str):
+
+def load_weights(self, kind: str):
     self.model = None
     self.weights = None
     torch.cuda.empty_cache()
@@ -214,22 +217,22 @@ def load_weights(self, kind:str):
     self.classifier = NeuralNetworkClassifier(model_name=model_name)
     self.classifier.initialize_model(num_classes=3)
     self.model = self.classifier.model
-    #Load Weights
+    # Load Weights
     if kind == "weights":
-        self.weights = torch.load(os.path.join("Weights", self.model._get_name(),"weights.pth"))
+        self.weights = torch.load(os.path.join("Weights", self.model._get_name(), "weights.pth"))
 
     elif kind == "best":
-        self.weights = torch.load(os.path.join("Weights", self.model._get_name(),"best_weights.pth"))
+        self.weights = torch.load(os.path.join("Weights", self.model._get_name(), "best_weights.pth"))
     self.model.load_state_dict(self.weights)
     self.model.eval()
-    #Load the training and accuracy curves
-    with open(os.path.join("Weights", self.model._get_name(),"model_hist.pkl"), 'rb') as f:
+    # Load the training and accuracy curves
+    with open(os.path.join("Weights", self.model._get_name(), "model_hist.pkl"), 'rb') as f:
         self.history = pickle.load(f)
-    #Load Model Parameters
-    path = os.path.join("Weights", self.model._get_name(),"model_params.npy")
-    self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size = [str(x) for x in np.load(path)]
-    
-    
+    # Load Model Parameters
+    path = os.path.join("Weights", self.model._get_name(), "model_params.npy")
+    self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size = [str(x) for x in
+                                                                                                         np.load(path)]
+
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
     plotAccVal = self.history["val"]["acc"]
@@ -239,28 +242,28 @@ def load_weights(self, kind:str):
     self.valAccPlot.setData(plotAccVal)
     self.trainLossPlot.setData(plotLossTrain)
     self.valLossPlot.setData(plotLossVal)
-    #print model stats
+    # print model stats
     print_model_stats(self)
     print("--> Weights and training curves loaded successfully.")
 
+
 def validate_test_set(self):
     signals = ["ARR", "CHF", "NSR"]
-    acc = [0,0,0]
+    acc = [0, 0, 0]
     preds = []
     labels = []
     for i, sig in enumerate(signals):
-        img_loc = os.listdir(os.path.join("images","test", sig))
+        img_loc = os.listdir(os.path.join("images", "test", sig))
         dir_len = len(img_loc)
 
         for img in img_loc:
-            img = os.path.join("images","test",sig, img)
+            img = os.path.join("images", "test", sig, img)
             img = Image.open(img)
             totensor = transforms.Compose([
-                        transforms.ToTensor(),
-                        transforms.Normalize(   mean=[0.485, 0.456, 0.406],
-                                                    std=[0.229, 0.224, 0.225]) ])
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
             img = totensor(img)
-            img = torch.unsqueeze(img, 0).cuda()
+            img = torch.unsqueeze(img, 0)
             try:
 
                 output = self.model(img)
@@ -269,43 +272,43 @@ def validate_test_set(self):
                 preds.append(pred.cpu().numpy())
 
                 if pred.data == i:
-                    acc[i] = acc[i] + 1 
+                    acc[i] = acc[i] + 1
                 excp = None
             except Exception as e:
                 excp = e
                 pass
             # print(pred.data == 0)   
         acc[i] /= dir_len
-    self.txtAccARR.setText(":  "+"{:.4f}".format(round(acc[0], 4)))    
-    self.txtAccCHF.setText(":  "+"{:.4f}".format(round(acc[1], 4)))
-    self.txtAccNSR.setText(":  "+"{:.4f}".format(round(acc[2], 4)))
+    self.txtAccARR.setText(":  " + "{:.4f}".format(round(acc[0], 4)))
+    self.txtAccCHF.setText(":  " + "{:.4f}".format(round(acc[1], 4)))
+    self.txtAccNSR.setText(":  " + "{:.4f}".format(round(acc[2], 4)))
 
     if excp:
-        print("\n\n Error:",excp)
-        print("\n--> Weights are not loaded yet.\n\tOptions:\n1. Train the model first -> Test\n2. Load Weights -> Test ")
+        print("\n\n Error:", excp)
+        print(
+            "\n--> Weights are not loaded yet.\n\tOptions:\n1. Train the model first -> Test\n2. Load Weights -> Test ")
     print(acc)
     preds = np.array(preds)
     labels = np.array(labels)
     # print(preds)
     # print(labels)
     cnf_mat = confusion_matrix(labels, preds)
-    ax = plt.subplot()    
-    sns.heatmap(cnf_mat, cbar=False, ax=ax, cmap = "Blues", fmt="g", xticklabels=["ARR", "CHF", "NSR"],
-                            yticklabels=["ARR", "CHF", "NSR"], annot=True, annot_kws={'size':'15'} )
-    sns.set(font_scale = 3.0)
-    ax.set_xlabel("Predicted labels", {'size':'15'})
-    ax.set_ylabel("True labels", {'size':'15'})
-    ax.set_title("Confusion Matrix", {'size':'15'})
+    ax = plt.subplot()
+    sns.heatmap(cnf_mat, cbar=False, ax=ax, cmap="Blues", fmt="g", xticklabels=["ARR", "CHF", "NSR"],
+                yticklabels=["ARR", "CHF", "NSR"], annot=True, annot_kws={'size': '15'})
+    sns.set(font_scale=3.0)
+    ax.set_xlabel("Predicted labels", {'size': '15'})
+    ax.set_ylabel("True labels", {'size': '15'})
+    ax.set_title("Confusion Matrix", {'size': '15'})
     ax.tick_params(axis='both', which='major', labelsize=15)
-  
 
     plt.plot()
-    pth = os.path.join("Weights", self.model._get_name(), "ConfMat"+self.model._get_name() +".jpg")
+    pth = os.path.join("Weights", self.model._get_name(), "ConfMat" + self.model._get_name() + ".jpg")
     plt.tight_layout()
-    plt.savefig(pth, pad_inches = 0, dpi=512/4)
+    plt.savefig(pth, pad_inches=0, dpi=512 / 4)
     img = Image.open(pth)
     img = np.array(img.resize((1024, 1024), Image.LANCZOS))
-    img = np.rot90(img,3)
+    img = np.rot90(img, 3)
     img = img[80:-80]
 
     plt.close()
@@ -314,15 +317,16 @@ def validate_test_set(self):
 
 
 def print_model_stats(self):
-    self.txtModel.setText(":  "+self.model._get_name())
-    self.txtLR.setText(":  "+str(self.learning_rate))    
-    self.txtEpochs.setText(":  "+str(int(float(self.num_epochs))) )
-    self.txtBS.setText(":  "+str(int(float(self.batch_size)))   )
-    self.txtValAcc.setText(":  "+"{:.4f}".format(round(float(self.ValAcc), 4)) )
-    self.txtTrainAcc.setText(":  "+"{:.4f}".format(round(float(self.TrainAcc), 4)) )
+    self.txtModel.setText(":  " + self.model._get_name())
+    self.txtLR.setText(":  " + str(self.learning_rate))
+    self.txtEpochs.setText(":  " + str(int(float(self.num_epochs))))
+    self.txtBS.setText(":  " + str(int(float(self.batch_size))))
+    self.txtValAcc.setText(":  " + "{:.4f}".format(round(float(self.ValAcc), 4)))
+    self.txtTrainAcc.setText(":  " + "{:.4f}".format(round(float(self.TrainAcc), 4)))
 
 
-            
-            
+def getPredictFile(self):
+    ''' Load Signal or Scologram Directory '''
+    self.FilePathPredic = QFileDialog.getExistingDirectory(self, "Select Directory")
 
 
