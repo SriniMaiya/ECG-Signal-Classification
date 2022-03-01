@@ -30,6 +30,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.imgOne = pg.ImageItem()
         self.imgTwo = pg.ImageItem()
         self.conf_Plt = pg.ImageItem()
+        self.predImg = pg.ImageItem()
 
         self.time = [0] * 1000
 
@@ -50,7 +51,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.best_weights = None
         self.history = None
         
-        
+        self.pred = None
 
         self.setupUi()
 
@@ -384,7 +385,6 @@ class Ui_SignalProcessing(QMainWindow):
 
 
 
-
         #->   TAB 3
         self.tabWidget.addTab(self.tab_2, "")
 
@@ -395,22 +395,31 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelResu = QtWidgets.QLabel(self.tabPrediction)
         self.labelResu.setGeometry(QtCore.QRect(650, 10, 151, 16))
         self.labelResu.setObjectName("labelResu")
-        self.labelResu.setText("Classwise Accuracy:")
+        self.labelResu.setText("Classwise Prediction:")
         
         self.labelResARR = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResARR.setGeometry(QtCore.QRect(650, 40, 121, 16))
+        self.labelResARR.setGeometry(QtCore.QRect(650, 40, 50, 16))
         self.labelResARR.setObjectName("labelResARR")
         self.labelResARR.setText("ARR")
+
+        self.predARR  = QtWidgets.QLabel(self.tabPrediction)
+        self.predARR.setGeometry(710, 40, 65, 16 )
          
         self.labelResCHF = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResCHF.setGeometry(QtCore.QRect(650, 70, 121, 16))
+        self.labelResCHF.setGeometry(QtCore.QRect(650, 70, 50, 16))
         self.labelResCHF.setObjectName("labelResCHF")
         self.labelResCHF.setText("CHF")
+
+        self.predCHF  = QtWidgets.QLabel(self.tabPrediction)
+        self.predCHF.setGeometry(710, 70, 65, 16 )
         
         self.labelResNSR = QtWidgets.QLabel(self.tabPrediction)
-        self.labelResNSR.setGeometry(QtCore.QRect(650, 100, 121, 16))
+        self.labelResNSR.setGeometry(QtCore.QRect(650, 100, 50, 16))
         self.labelResNSR.setObjectName("labelResNSR")
         self.labelResNSR.setText("NSR")
+
+        self.predNSR  = QtWidgets.QLabel(self.tabPrediction)
+        self.predNSR.setGeometry(710, 100, 65, 16 )
 
 
         self.labelPredictSCL = QtWidgets.QLabel(self.tabPrediction)
@@ -432,13 +441,12 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnPredictSGN.setObjectName("btnPredictSGN")
 
         self.widgetPredicSCL = pg.PlotWidget(self.tabPrediction)
-        self.widgetPredicSCL.setGeometry(QtCore.QRect(30, 180, 400, 300))
+        self.widgetPredicSCL.setGeometry(QtCore.QRect(30, 180, 400, 400))
         self.widgetPredicSCL.setObjectName("widgetPredicSCL")
-        #self.firstSignalTwo = self.widgetPlotAcc.plot(self.time, self.sig_CHF, pen= self.redPen)
-
+        self.widgetPredicSCL.addItem(self.predImg)
         
         self.widgetPredicSGN = pg.PlotWidget(self.tabPrediction)
-        self.widgetPredicSGN.setGeometry(QtCore.QRect(450, 180, 400, 300))
+        self.widgetPredicSGN.setGeometry(QtCore.QRect(450, 180, 400, 400))
         self.widgetPredicSGN.setObjectName("widgetPredicSGN")
         #self.firstSignalTwo = self.widgetPlotLoss.plot(self.time, self.sig_CHF, pen= self.redPen)
         
@@ -499,6 +507,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnSaveWts.clicked.connect(self.slotSaveWeights)
         self.btnLoadBestWeights.clicked.connect(self.slotLoadBWeights)
         self.btnTest.clicked.connect(self.slotTest)
+        self.btnPredictSCL.clicked.connect(self.slotPredSCL)
 
 
     # Slots are defined here
@@ -522,6 +531,9 @@ class Ui_SignalProcessing(QMainWindow):
     
     def slotTest(self):
         validate_test_set(self)
+    
+    def slotPredSCL(self):
+        pred_SCL(self)
 
     # Test Function
     def test_func(self):

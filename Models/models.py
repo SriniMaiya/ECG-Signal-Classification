@@ -95,7 +95,7 @@ class NeuralNetworkClassifier:
                     # counts= {x:y for x in [0,1,2] for y in sum(labels.numpy() == x)}
                     # weights = compute_class_weight(class_weight='balanced', classes= [0,1,2],y= labels.numpy())
                     weights = np.array([sum((labels.numpy() == t)) for t in [0,1,2] ])
-                    weights = weights + 0.00001
+                    weights = weights + 0.00000001
                     # print(weights)
                     weights = 1./ np.array(weights) 
                     # print(weights)
