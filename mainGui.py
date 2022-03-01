@@ -23,9 +23,6 @@ class Ui_SignalProcessing(QMainWindow):
 
         ''' Global GUi Variables '''
         self.FilePath = "File Path"
-        self.FilePathPredic = None
-
-        self.UserPredictionDecision = True # True if it Signal , False for Scologram
         self.sig_ARR = [0] * 1000
         self.sig_CHF = [0] * 1000
         self.sig_NSR = [0] * 1000
@@ -420,29 +417,19 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelPredictSCL.setGeometry(QtCore.QRect(10, 10, 121, 16))
         self.labelPredictSCL.setObjectName("labelPredictSCL")
 
-        self.btnPredictSCLLoad = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredictSCLLoad.setGeometry(QtCore.QRect(10, 40, 113, 32))
-        self.btnPredictSCLLoad.setObjectName("btnPredictSCLLoad")
-
         self.btnPredictSCL = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredictSCL.setGeometry(QtCore.QRect(10, 90, 113, 32))
+        self.btnPredictSCL.setGeometry(QtCore.QRect(10, 40, 113, 32))
         self.btnPredictSCL.setObjectName("btnPredictSCL")
-        self.btnPredictSCL.setText("Predict from Sclogram")
 
 
         self.labelPredictSGN = QtWidgets.QLabel(self.tabPrediction)
         self.labelPredictSGN.setGeometry(QtCore.QRect(300, 10, 121, 16))
         self.labelPredictSGN.setObjectName("labelPredictSGN")
-
-        self.btnPredictSGNLoad = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredictSGNLoad.setGeometry(QtCore.QRect(300, 40, 113, 32))
-        self.btnPredictSGNLoad.setObjectName("btnPredictSGNLoad")
-        self.btnPredictSGNLoad.setText("Load Signal")
+        
 
         self.btnPredictSGN = QtWidgets.QPushButton(self.tabPrediction)
-        self.btnPredictSGN.setGeometry(QtCore.QRect(300, 90, 113, 32))
+        self.btnPredictSGN.setGeometry(QtCore.QRect(300, 40, 113, 32))
         self.btnPredictSGN.setObjectName("btnPredictSGN")
-
 
         self.widgetPredicSCL = pg.PlotWidget(self.tabPrediction)
         self.widgetPredicSCL.setGeometry(QtCore.QRect(30, 180, 400, 300))
@@ -492,7 +479,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnLoadWeights.setText(_translate("SignalProcessing", "Load"))
         self.btnLoadBestWeights.setText(_translate("SignalProcessing", "Load"))
         self.labelLoadWeights.setText(_translate("SignalProcessing", "Pretrained weights:"))
-        self.btnPredictSCLLoad.setText(_translate("SignalProcessing", "Load Sclogram"))
+        self.btnPredictSCL.setText(_translate("SignalProcessing", "Test Sclogram"))
         self.lblSaveWts.setText(_translate("SignalProcessing","Save weights:"))
         self.labelLoadBestWeights.setText(_translate("SignalProcessing", "Best-pretrained weights:"))
         #self.QComboBoxRate.setText(_translate("SignalProcessing", "Unknown"))
@@ -500,7 +487,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelNetworkType.setText(_translate("SignalProcessing", "Neural Network:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SignalProcessing", "Training Signal"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPrediction), _translate("SignalProcessing", "Prediction"))
-        self.btnPredictSGN.setText("Prediction From Signal")
+        self.btnPredictSGN.setText("Test Signal")
         self.labelPredictSGN.setText("Prediction From Signal")
 
     def connect(self):
@@ -512,8 +499,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnSaveWts.clicked.connect(self.slotSaveWeights)
         self.btnLoadBestWeights.clicked.connect(self.slotLoadBWeights)
         self.btnTest.clicked.connect(self.slotTest)
-        self.btnPredictSCLLoad.clicked.connect(self.setloadPredict0)
-        self.btnPredictSGNLoad.clicked.connect(self.setloadPredict1)
+
 
     # Slots are defined here
     def loadData(self):
@@ -536,14 +522,6 @@ class Ui_SignalProcessing(QMainWindow):
     
     def slotTest(self):
         validate_test_set(self)
-
-    def setloadPredict0(self):
-        self.UserPredictionDecision = False
-        getPredictFile(self)
-
-    def setloadPredict1(self):
-        self.UserPredictionDecision = True
-        getPredictFile(self)
 
     # Test Function
     def test_func(self):

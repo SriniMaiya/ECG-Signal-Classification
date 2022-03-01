@@ -6,6 +6,7 @@ from matplotlib.pyplot import get_cmap
 # from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 # import seaborn as sns
 import os
+from torch import nn
 import torch
 import matplotlib.pyplot as plt
 from torchvision import transforms
@@ -24,8 +25,7 @@ Connection: It is called from slot @XXX From Main Gui
 
 # HOw to open(Brows) data frmo PyQt
 def LoadECGData(self):
-    (self.FilePath, ECGData) = QFileDialog.getOpenFileNames(self, "Choose File as .MAT", "", "ECG data set ("
-                                                                                             "*.mat *.MAT)")
+    (self.FilePath, _ )= QFileDialog.getOpenFileNames(self, "Choose File as .MAT", "", "ECG data set (*.mat *.MAT)")
     ECGData = loadmat(self.FilePath[0])  # Need To be modified
     # ECGData.keys(), type(ECGData)
     ECGData = ECGData["ECGData"]  # Need To be modified
@@ -314,6 +314,27 @@ def validate_test_set(self):
     plt.close()
     self.conf_Plt.setImage(img)
     self.conf_Plt.render()
+
+def pred_SCL(self):
+    (self.filepath, _) = QFileDialog.getOpenFileNames(self, "Open a scalogram to predict","", "Scalogram(*.jpeg, *.png)" )
+    img = Image.open(self.filepath[0])
+    totensor = transforms.Compose([
+                                    transforms.ToTensor(),
+                                    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                         std=[0.229, 0.224, 0.225]),
+                                    transforms.Resize(224)
+                                ])
+    scalogram = totensor(img)
+    scalogram = torch.unsqueeze(scalogram, 0).cuda()
+    preds = nn.Softmax(dim=1)(self.model(scalogram))
+    preds = preds.cpu().detach().numpy()[0] * 100
+    self.predARR.setText(": {:.2f}%".format(preds[0]))
+    self.predCHF.setText(": {:.2f}%".format(preds[1]))
+    self.predNSR.setText(": {:.2f}%".format(preds[2]))
+
+    img = np.array(img)
+    img = np.rot90(img)
+    self.predImg.setImage(img)
 
 
 def print_model_stats(self):
