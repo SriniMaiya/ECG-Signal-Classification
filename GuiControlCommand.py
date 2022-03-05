@@ -15,18 +15,16 @@ from Models.models import NeuralNetworkClassifier
 from Models.utils import train_dataloader
 import pickle
 
-"""
-Function: Open QFileDialog to address and open the ECG signals 
-base on the User decisions 
-
-Connection: It is called from slot @XXX From Main Gui 
-"""
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu" ).type
 
-
 # HOw to open(Brows) data frmo PyQt
-def LoadECGData(self):
+def LoadECGData(self):     
+    '''
+    Function: Open QFileDialog to address and open the ECG signals 
+    base on the User decisions 
+
+    Connection: It is called from slot @XXX From Main Gui 
+    '''
     (self.FilePath, _ )= QFileDialog.getOpenFileNames(self, "Choose File as .MAT", "", "ECG data set (*.mat *.MAT)")
     ECGData = loadmat(self.FilePath[0])  # Need To be modified
     # ECGData.keys(), type(ECGData)
@@ -47,16 +45,14 @@ def LoadECGData(self):
     print("Number of CHF samples: ", self.sig_CHF.shape[0])
 
 
-"""
-Function : Plot all signals in randomly in given time steps 
-Connection: It is called from slot @Plot From Main Gui
-and it is a in connect with @pyqtgraph 
-
-returned : Nothing
-"""
-
 
 def plot_signal_rnd(self):
+    '''
+    Function : Plot all signals in randomly in given time steps 
+    Connection: It is called from slot @Plot From Main Gui
+    and it is a in connect with @pyqtgraph 
+    For display puposes
+    '''
     if int(self.txtSigStart.toPlainText()) >= 0 and int(self.txtSigStart.toPlainText()) <= 60000:
         if ((int(self.txtSigEnd.toPlainText()) > int(self.txtSigStart.toPlainText()))
                 and int(self.txtSigEnd.toPlainText()) <= 60000):
@@ -67,16 +63,12 @@ def plot_signal_rnd(self):
                                          lengthStart, lengthEnd)
 
             sig_plot = Signals[0]  # sig_plot
-            # sig_plot = sig_plot[0:int(self.txtLenSignal.toPlainText())]
 
             sig_filter_plot = Signals[1]  # sig_filter_plot
-            # sig_filter_plot = sig_filter_plot[0:int(self.txtLenSignal.toPlainText())]
 
             wavelet_plot = Signals[2]  # wavelet_plot
-            # wavelet_plot = wavelet_plot[0:int(self.txtLenSignal.toPlainText())]
 
             wavelet_filter_plot = Signals[3]  # wavelet_filter_plot
-            # wavelet_filter_plot = wavelet_filter_plot[0:int(self.txtLenSignal.toPlainText())]
 
             self.time = range(0, len(sig_plot), 1)
             self.time = list(self.time)
@@ -99,16 +91,13 @@ def plot_signal_rnd(self):
     else:
         print("Please Enter Correct Value")
 
-
-"""Function : High Pass FAlter signal 
-Description : Design an Nth-order digital or analog Butterworth filter and return the filter 
-coefficients (MATLAB IIR Filter format)
-
-returned : filter forward and backward signal
-"""
-
-
 def butter_highpass_filter(data, cutoff=1, fs=128, order=5):
+    '''Function : High Pass FAlter signal 
+    Description : Design an Nth-order digital or analog Butterworth filter and return the filter 
+    coefficients (MATLAB IIR Filter format)
+
+    returned : filter forward and backward signal
+    '''
     normal_cutoff = cutoff / (fs / 2)
     b, a = signal.butter(order, normal_cutoff, btype="high", analog=False)  # b = ndarray, a = ndarray
     filteredSignal = signal.filtfilt(b, a, data)
@@ -132,20 +121,15 @@ def creatRndPlotSignal(num, ARR, CHF, NSR, lengthStart, lengthEnd):
         sig = ARR[ind_ARR][lengthStart:lengthEnd]
         sigf = butter_highpass_filter(sig)
         sigf = notch_filter(sigf)
-        # lab = self.lab_ARR[ind_ARR]
     elif num == 1:
         sig = CHF[ind_CHF][lengthStart:lengthEnd]
         sigf = butter_highpass_filter(sig)
         sigf = notch_filter(sigf)
-        # lab = self.lab_CHF[ind_CHF]
     elif num == 2:
         sig = NSR[ind_NSR][lengthStart:lengthEnd]
         sigf = butter_highpass_filter(sig)
         sigf = notch_filter(sigf)
-        # lab = self.lab_NSR[ind_NSR]
 
-        # sig = sig[0:length]  # Can be
-        # sigf = sigf[0:length]
 
     if np.max(sig) < np.abs(np.min(sig)):
         sig = -1 * sig
@@ -168,32 +152,41 @@ def creatRndPlotSignal(num, ARR, CHF, NSR, lengthStart, lengthEnd):
 
 
 def trainNetwork(self):
+    '''Get the values from GUI and call the training function from models.py '''
     if device == "cuda":
         torch.cuda.empty_cache()
-        
+    #get batch_size, number_of_epochs, learning_rate and model_name from user input
     self.batch_size = int(self.QCombobatch_size.currentText())
     self.num_epochs = int(self.txtNum_epochs.toPlainText())
     self.learning_rate = float(self.QComboBoxRate.currentText())
     model_name = self.NetworkType.currentText()
 
     print(self.batch_size, self.num_epochs, self.learning_rate)
+    #Select the user specified neural network
     classifier = NeuralNetworkClassifier(model_name=model_name)
+    #Get dataloader and load the images of size batch number at a time
     dataloader = train_dataloader(input_size=224, dataset_path="images",
                                   batch_size=self.batch_size)  # add Qcombox for batch size
     classifier.initialize_model(num_classes=3)
+    #Start training and return model parameters
     self.model, self.history, self.weights, self.best_weights = classifier.start_training(dataloaders=dataloader,
                                                                                           num_epochs=self.num_epochs,
                                                                                           learning_rate=self.learning_rate)
+    #Load the model with trained weights                                                                                      
     self.model.load_state_dict(self.weights)
-    # This Value will goes to the plot
+    
+    # Add the train, validation loss and accuracy plots 
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
     plotAccVal = self.history["val"]["acc"]
     plotLossVal = self.history["val"]["loss"]
+    #Send the plots to GUI
     self.trainAccPlot.setData(plotAccTrain)
     self.valAccPlot.setData(plotAccVal)
     self.trainLossPlot.setData(plotLossTrain)
     self.valLossPlot.setData(plotLossVal)
+    
+    #Store training and validation accuracies for Text-Display
     self.ValAcc = plotAccVal[-1]
     self.TrainAcc = plotAccTrain[-1]
 
@@ -201,6 +194,8 @@ def trainNetwork(self):
 
 
 def save_weights(self):
+    '''Saves weights, loss-accuracy data and model parameters(batchsize, learning rate,
+     train and val accuracy) for further calls when the weights are loaded back'''
     weights_path = os.path.join("Weights", self.model._get_name())
     os.makedirs(weights_path, exist_ok=True)
     torch.save(self.weights, os.path.join(weights_path, "weights_"+device+".pth"))
@@ -213,6 +208,8 @@ def save_weights(self):
 
 
 def load_weights(self):
+    '''Load the weights and all model information back to the GUI 
+        when the user clicks the button to load the weights'''
     self.model = None
     self.weights = None
     torch.cuda.empty_cache()
@@ -230,7 +227,7 @@ def load_weights(self):
     path = os.path.join("Weights", self.model._get_name(), "model_params_"+device+".npy")
     self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size = [str(x) for x in
                                                                                                          np.load(path)]
-
+    #Plot the train and accuracy curves
     plotAccTrain = self.history["train"]["acc"]
     plotLossTrain = self.history["train"]["loss"]
     plotAccVal = self.history["val"]["acc"]
@@ -238,7 +235,7 @@ def load_weights(self):
 
     self.model.load_state_dict(self.weights)
     self.model.eval()
-    
+
     self.trainAccPlot.setData(plotAccTrain)
     self.valAccPlot.setData(plotAccVal)
     self.trainLossPlot.setData(plotLossTrain)
@@ -249,37 +246,44 @@ def load_weights(self):
 
 
 def validate_test_set(self):
+    '''Validation of the model on the test set.
+        Predict on the whole test set.
+        Calculate test accuracy and plot the Confusion matrix in the GUI '''
     signals = ["ARR", "CHF", "NSR"]
-    acc = [0, 0, 0]
-    preds = []
-    labels = []
-    for i, sig in enumerate(signals):
+    acc = [0, 0, 0] #Classwise accuracy
+    preds = []      #Predictions
+    labels = []     #True label
+
+    for i, sig in enumerate(signals):                                           # For each class of the test set, store the image names
         img_loc = os.listdir(os.path.join("images", "test", sig))
         dir_len = len(img_loc)
 
-        for img in img_loc:
+        for img in img_loc:                                                     # For image in the stored images
             img = os.path.join("images", "test", sig, img)
-            img = Image.open(img)
-            totensor = transforms.Compose([
+            img = Image.open(img)                                               # Open  the image
+
+            totensor = transforms.Compose([                                     # Transformations similar to dataset loader    
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-            img = totensor(img)
-            if device == "cuda":
-                img = torch.unsqueeze(img, 0).cuda()
+            
+            img = totensor(img)                                                 # Apply transformations on the image and convert to tensor    
+            
+            if device == "cuda":                                                # Add the missing dimension as the single image has 3 Dimensions, but 4 are required
+                img = torch.unsqueeze(img, 0).cuda()                            #   to mimic the dataloader and to match the weights format
             else:
                 img = torch.unsqueeze(img, 0)
 
-            output = self.model(img)
-            pred = torch.argmax(output)
-            labels.append(i)
-            preds.append(pred.cpu().numpy())
+            output = self.model(img)                                            # Predict    
+            pred = torch.argmax(output)                                         # Get the index of the prediction array with maximum value
+            labels.append(i)                                                    # Append the original labels
+            preds.append(pred.cpu().numpy())                                    # Append the prediction to an array
 
-            if pred.data == i:
-                acc[i] = acc[i] + 1
+            if pred.data == i:                                                  # IF correct prediction has been made,    
+                acc[i] = acc[i] + 1                                             #   increase the number of correct counts by 1    
  
-            # print(pred.data == 0)   
-        acc[i] /= dir_len
-    self.txtAccARR.setText(":  " + "{:.4f}".format(round(acc[0], 4)))
+        acc[i] /= dir_len                                                       # Divide the correct predictions by the number of images in each class 
+
+    self.txtAccARR.setText(":  " + "{:.4f}".format(round(acc[0], 4)))           # Display accuracy of each in GUI
     self.txtAccCHF.setText(":  " + "{:.4f}".format(round(acc[1], 4)))
     self.txtAccNSR.setText(":  " + "{:.4f}".format(round(acc[2], 4)))
 
@@ -288,9 +292,9 @@ def validate_test_set(self):
     labels = np.array(labels)
     # print(preds)
     # print(labels)
-    cnf_mat = confusion_matrix(labels, preds)
+    cnf_mat = confusion_matrix(labels, preds)                                                           # Create confusion matrix from the array       
     ax = plt.subplot()
-    sns.heatmap(cnf_mat, cbar=False, ax=ax, cmap="Blues", fmt="g", xticklabels=["ARR", "CHF", "NSR"],
+    sns.heatmap(cnf_mat, cbar=False, ax=ax, cmap="Blues", fmt="g", xticklabels=["ARR", "CHF", "NSR"],   # Create seaborn confusion matrix image
                 yticklabels=["ARR", "CHF", "NSR"], annot=True, annot_kws={'size': '15'})
     sns.set(font_scale=3.0)
     ax.set_xlabel("Predicted labels", {'size': '15'})
@@ -301,19 +305,23 @@ def validate_test_set(self):
     plt.plot()
     pth = os.path.join("Weights", self.model._get_name(), "ConfMat" + self.model._get_name() + ".jpg")
     plt.tight_layout()
-    plt.savefig(pth, pad_inches=0, dpi=512 / 4)
+    plt.savefig(pth, pad_inches=0, dpi=512 / 4)                                                         # Save the confusion matrix
     img = Image.open(pth)
     img = np.array(img.resize((1024, 1024), Image.LANCZOS))
     img = np.rot90(img, 3)
     img = img[80:-80]
 
     plt.close()
-    self.conf_Plt.setImage(img)
+    self.conf_Plt.setImage(img)                                                                         # Display the confusion matrix
     self.conf_Plt.render()
 
-def pred_SCL(self):
+def pred_SCL(self):         
+    '''Prediction of the scalogram from user input and display'''                               
+    
+    #Get the file path from the user                                     
     (self.filepath, _) = QFileDialog.getOpenFileNames(self, "Open a scalogram to predict","", "Scalogram(*.jpeg, *.png)" )
     img = Image.open(self.filepath[0])
+    #Convert the image to tensor and preprocess the tensor
     totensor = transforms.Compose([
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -321,13 +329,17 @@ def pred_SCL(self):
                                     transforms.Resize(224)
                                 ])
     scalogram = totensor(img)
+    #Send the image to appropriate device
     if device == "cuda":
         scalogram = torch.unsqueeze(scalogram, 0).cuda()
     else:
         scalogram = torch.unsqueeze(scalogram, 0)
 
+    # Get the probabilities of prediction for each class using nn.Softmax and convert to a numpy array
     preds = nn.Softmax(dim=1)(self.model(scalogram))
     preds = preds.cpu().detach().numpy()[0] * 100
+
+    # Send the each index of array to appropriate class
     self.predARR.setText(": {:.2f}%".format(preds[0]))
     self.predCHF.setText(": {:.2f}%".format(preds[1]))
     self.predNSR.setText(": {:.2f}%".format(preds[2]))
@@ -336,7 +348,9 @@ def pred_SCL(self):
     img = np.rot90(img)
     self.predImg.setImage(img)
 
+
 def print_model_stats(self):
+    ''' A unified function to print the gathered model statistics'''
     self.txtModel.setText(":  " + self.model._get_name())
     self.txtLR.setText(":  " + str(self.learning_rate))
     self.txtEpochs.setText(":  " + str(int(float(self.num_epochs))))
