@@ -7,7 +7,7 @@ Course: Digital Signal Processing and Machine learning
 Date : 14.Feb.2022
 """
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from GuiControlCommand import *
 import pyqtgraph as pg
@@ -219,14 +219,6 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelLoadWeights = QtWidgets.QLabel(self.tab_2)
         self.labelLoadWeights.setGeometry(QtCore.QRect(750, 10, 132, 20))
         self.labelLoadWeights.setObjectName("labelLoadWeights")
-        #->
-        #self.btnLoadBestWeights = QtWidgets.QPushButton(self.tab_2)
-        #self.btnLoadBestWeights.setGeometry(QtCore.QRect(825, 30, 120,32))
-        #self.btnLoadBestWeights.setObjectName("LoadBestweights")
-
-        #self.labelLoadBestWeights = QtWidgets.QLabel(self.tab_2)
-        #self.labelLoadBestWeights.setGeometry(QtCore.QRect(805, 10, 166, 20))
-        #self.labelLoadBestWeights.setObjectName("labelLoadBestWeights")
 
         #-> Plot train and validation accuracy 
         self.widgetPlotAcc = pg.PlotWidget(self.tab_2)
@@ -377,7 +369,6 @@ class Ui_SignalProcessing(QMainWindow):
 
         #-> Confusion matrix plot
         self.widgetPlotConfMat = pg.PlotWidget(self.tab_2)
-        # self.widgetPlotConfMat.setTitle("Confusion Matrix", color="w")
         self.widgetPlotConfMat.setBackground("k")
         self.widgetPlotConfMat.setGeometry(QtCore.QRect(790, 120, 375,375))
         self.widgetPlotConfMat.setObjectName("widgetPlotLoss")
@@ -507,8 +498,6 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnSaveWts.clicked.connect(self.slotSaveWeights)
         self.btnTest.clicked.connect(self.slotTest)
         self.btnPredictSCL.clicked.connect(self.slotPredSCL)
-
-
     # Connect to the respective functions of GuiControlCommand.py 
     def loadData(self):
         LoadECGData(self)

@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 from torchvision import models
-import matplotlib.pyplot as plt
 from torch.optim import lr_scheduler
 import time
 import copy

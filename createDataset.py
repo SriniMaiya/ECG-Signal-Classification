@@ -5,7 +5,6 @@ from scipy import signal
 import numpy as np
 import os
 from PIL import Image
-
 from matplotlib.pyplot import get_cmap
 import shutil
 

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QFileDialog
-from scipy import io, signal
+from scipy import signal
 import numpy as np
 from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap

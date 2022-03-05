@@ -1,6 +1,5 @@
 from utils import test_dataloader
 from models import NeuralNetworkClassifier
-import numpy as np
 import torch
 import os
 
