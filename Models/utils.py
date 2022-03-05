@@ -2,10 +2,13 @@ from torchvision import datasets, transforms
 import numpy as np
 import torch
 import os
-
+'''
+Utility File for loading the training and test dataset with other preprocessing
+'''
 
 def train_dataloader(input_size, dataset_path:str, batch_size:int = 32 ):
-
+    '''Loads the train and validation images. The images are in tensor format. All the tensors are packed as a dictionary.
+        The images are resized, converted to tensor and normalized.'''
     data_transforms = {
                         'train':transforms.Compose([
                             transforms.Resize(input_size),
@@ -28,6 +31,7 @@ def train_dataloader(input_size, dataset_path:str, batch_size:int = 32 ):
     return dataloader_dict
 
 def test_dataloader(testset_path:str, batch_size:int = 32):
+    '''Dataloader for testing of the model'''
     transform = transforms.Compose([transforms.Resize(224),
                                     transforms.ToTensor()
                                     ])
