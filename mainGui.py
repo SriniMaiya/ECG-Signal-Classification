@@ -8,42 +8,46 @@ Date : 14.Feb.2022
 """
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from GuiControlCommand import *
 import pyqtgraph as pg
 import sys
 
 
 class Ui_SignalProcessing(QMainWindow):
-
+    """ Class used to define the GUI of the project"""
     def __init__(self):
         """ Global Variable in GUI Loop """
         super(Ui_SignalProcessing, self).__init__()
         self.setWindowTitle("Signal Processing and Machine Learning")
 
         ''' Global GUi Variables '''
+
+        #File Path
         self.FilePath = "File Path"
+        #Initialization of the signals
         self.sig_ARR = [0] * 1000
         self.sig_CHF = [0] * 1000
         self.sig_NSR = [0] * 1000
 
-        self.imgOne = pg.ImageItem()
-        self.imgTwo = pg.ImageItem()
-        self.conf_Plt = pg.ImageItem()
-        self.predImg = pg.ImageItem()
+        
+        self.imgOne = pg.ImageItem()                                # Continuous wavelet transformation of the signal
+        self.imgTwo = pg.ImageItem()                                # Continuous wavelet transformation of the filtered signal
+        self.conf_Plt = pg.ImageItem()                              # Confusion matrix 
+        self.predImg = pg.ImageItem()                               # Image selected by the user for prediction
 
-        self.time = [0] * 1000
+        self.time = [0] * 1000                                      # Time(x-axis)  for plotting the signal
 
-        self.trainAcc = [0]*20
+        self.trainAcc = [0]*20                                      # Initialization of train and validation: accuracy and loss curves
         self.valAcc = [0]*20
         self.trainLoss = [0]*20
         self.valLoss = [0]*20
 
-        self.cutoff = 1
-        self.fs = 128
+        self.cutoff = 1                                             # Cutoff frequency    
+        self.fs = 128                                               # Sampling frequency
 
-        # Plot global variable
-        self.redPen = pg.mkPen((255, 0, 0))
+        # Pens to draw the signal
+        self.redPen = pg.mkPen((255, 0, 0))     
         self.greenPen = pg.mkPen((0,255,0))
 
         self.model = None
@@ -64,78 +68,79 @@ class Ui_SignalProcessing(QMainWindow):
         SignalProcessing.setObjectName("SignalProcessing")
         SignalProcessing.resize(1240, 800)
         
-        self.centralwidget = QtWidgets.QWidget()  # SignalProcessing
+        self.centralwidget = QtWidgets.QWidget()                                # SignalProcessing: Main Window
         self.centralwidget.setObjectName("centralwidget")
 
-        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
+        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)               # Tab Widget
         self.tabWidget.setGeometry(QtCore.QRect(10, 10, 1200, 760))
         self.tabWidget.setObjectName("tabWidget")
 
-        self.tab = QtWidgets.QWidget()
+                                # Tab1: Visualization of signals    
+        self.tab = QtWidgets.QWidget()                                          
         self.tab.setObjectName("tab")
 
-        self.cwt = pg.PlotWidget(self.tab)                         #cwt
+        self.cwt = pg.PlotWidget(self.tab)                         #cwt 
         self.cwt.setGeometry(QtCore.QRect(30, 10, 340, 340)) 
         self.cwt.setStyleSheet("background-color: blue")
         self.cwt.setObjectName("cwt")
         self.cwt.addItem(self.imgOne)
         
-        self.cwtf = pg.PlotWidget(self.tab)                         #cwtf
+        self.cwtf = pg.PlotWidget(self.tab)                         #cwt filtered
         self.cwtf.setGeometry(QtCore.QRect(380, 10, 340, 340))
         self.cwtf.setStyleSheet("background-color: white")
         self.cwtf.setObjectName("cwtf")
         self.cwtf.addItem(self.imgTwo)
 
-        self.sig = pg.PlotWidget(self.tab)                           #sig
+        self.sig = pg.PlotWidget(self.tab)                           # signal
         self.sig.setGeometry(QtCore.QRect(30, 360, 340, 340))
         self.sig.setStyleSheet("background-color: green")
         self.sig.setObjectName("sig")
         self.firstSignal = self.sig.plot(self.time, self.sig_NSR, pen= self.redPen)
 
-        self.sigf = pg.PlotWidget(self.tab)                         #sigf
+        self.sigf = pg.PlotWidget(self.tab)                         # signal filtered
         self.sigf.setGeometry(QtCore.QRect(380, 360, 340, 340))
         self.sigf.setStyleSheet("background-color: red")
         self.sigf.setObjectName("sigf")
         self.firstSignalTwo = self.sigf.plot(self.time, self.sig_CHF, pen= self.greenPen)
         
-        self.btnLoadData = QtWidgets.QPushButton(self.tab)
+        self.btnLoadData = QtWidgets.QPushButton(self.tab)                  # Pushbutton to load the data into GUI
         self.btnLoadData.setGeometry(QtCore.QRect(950, 20, 151, 51))
         self.btnLoadData.setObjectName("btnLoadData")
 
-        self.labelSigLength = QtWidgets.QLabel(self.tab)
+        self.labelSigLength = QtWidgets.QLabel(self.tab)                    # Label for plot time entry
         self.labelSigLength.setGeometry(QtCore.QRect(950, 90, 131, 31))
         self.labelSigLength.setObjectName("labelSigLength")
 
-        self.txtSigStart = QtWidgets.QTextEdit(self.tab)
+        self.txtSigStart = QtWidgets.QTextEdit(self.tab)                    # Start time of the signal to visualze
         self.txtSigStart.setGeometry(QtCore.QRect(950, 130, 60, 30))
         self.txtSigStart.setObjectName("txtSigStart")
         self.txtSigStart.append("0")
 
-        self.txtSigEnd = QtWidgets.QTextEdit(self.tab)
+        self.txtSigEnd = QtWidgets.QTextEdit(self.tab)                      # Label for end-time of the signal to visualze
         self.txtSigEnd.setGeometry(QtCore.QRect(1050, 130, 60, 30))
         self.txtSigEnd.setObjectName("txtLenSignalEnd")
         self.txtSigEnd.append("1000")
 
-        listSignal = ['ARR', 'CHF', 'NSR']
+        listSignal = ['ARR', 'CHF', 'NSR']                                  # Type of signal selection from drop-down menu
         self.selectSig = QtWidgets.QComboBox(self.tab)
         self.selectSig.setGeometry(QtCore.QRect(950, 180, 151, 51))
         self.selectSig.setObjectName("selectSig")
         self.selectSig.addItems(listSignal)
         
-        self.btnPlotRnd = QtWidgets.QPushButton(self.tab)
+        self.btnPlotRnd = QtWidgets.QPushButton(self.tab)                   # Plot the signal and generated wavelets
         self.btnPlotRnd.setGeometry(QtCore.QRect(950, 270, 151, 51))
         self.btnPlotRnd.setObjectName("btnPlotRnd")
 
               
 
 
-        #TAB 2
+                                 #TAB 2: Training the neural network
         self.tabWidget.addTab(self.tab, "")
 
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
 
-        #->
+        #-> Dropdown menu for type of network selection
         networkType = ["AlexNet", "GoogLeNet", "SqueezeNet", "ResNet"]
         self.NetworkType = QtWidgets.QComboBox(self.tab_2)
         self.NetworkType.setGeometry(QtCore.QRect(10, 30, 113, 32))
@@ -145,12 +150,12 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelNetworkType = QtWidgets.QLabel(self.tab_2)
         self.labelNetworkType.setGeometry(QtCore.QRect(10, 10, 121, 16))
         self.labelNetworkType.setObjectName("labelNetworkType")
-        #->
+        #-> Colored box: Train the network
         self.widgetWayOne = QtWidgets.QWidget(self.tab_2)
         self.widgetWayOne.setGeometry(QtCore.QRect(130, 5, 515, 65))
         self.widgetWayOne.setObjectName("widgetWayOne")
         self.widgetWayOne.setStyleSheet("background-color:#cac0c0")
-
+        #-> Drop down menu for Selection of batch-size
         self.lblbatch_size = QtWidgets.QLabel(self.tab_2)
         self.lblbatch_size.setGeometry(QtCore.QRect(135, 10, 70, 16))
         self.lblbatch_size.setObjectName("lblbatch_size")
@@ -161,7 +166,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.QCombobatch_size.setGeometry(QtCore.QRect(135, 30, 70, 32))
         self.QCombobatch_size.setObjectName("QCombobatch_size")
         self.QCombobatch_size.addItems(listbatch_size)
-        #->
+        #->Dropdown menu for learning rate selection
         self.lblRate = QtWidgets.QLabel(self.tab_2)
         self.lblRate.setGeometry(QtCore.QRect(220, 10, 100, 16))
         self.lblRate.setObjectName("lblRate")
@@ -172,7 +177,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.QComboBoxRate.setGeometry(QtCore.QRect(220, 30, 100, 32))
         self.QComboBoxRate.setObjectName("QComboBoxRate")
         self.QComboBoxRate.addItems(listLr)
-        #->
+        #-> Text entry box for number of epochs 
         self.lblnum_epochs = QtWidgets.QLabel(self.tab_2)
         self.lblnum_epochs.setGeometry(QtCore.QRect(335, 10, 50, 20))
         self.lblnum_epochs.setObjectName("lblRate")
@@ -182,7 +187,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.txtNum_epochs.setGeometry(QtCore.QRect(335, 30, 50, 32))
         self.txtNum_epochs.setObjectName("txtNum_epochs")
         self.txtNum_epochs.setText("10")
-        #->
+        #-> Push button for starting the training
         self.btnTrain = QtWidgets.QPushButton(self.tab_2)
         self.btnTrain.setGeometry(QtCore.QRect(400, 30, 110, 32))
         self.btnTrain.setObjectName("btnTrain")
@@ -191,7 +196,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.labelTrain.setGeometry(QtCore.QRect(400, 10, 110, 16))
         self.labelTrain.setObjectName("labelTrain")
         self.labelTrain.setText("Train:")
-        #->
+        #->Push button for saving weights
         self.btnSaveWts = QtWidgets.QPushButton(self.tab_2)
         self.btnSaveWts.setGeometry(QtCore.QRect(525, 30, 113, 32))
         self.btnSaveWts.setObjectName("btnSaveWts")
@@ -201,12 +206,12 @@ class Ui_SignalProcessing(QMainWindow):
         self.lblSaveWts.setGeometry(QtCore.QRect(525, 10, 120, 20))
         self.lblSaveWts.setObjectName("lblSaveWts")
 
-
+        #-> Color box: Loading the saved weights
         self.widgetWayTwo = QtWidgets.QWidget(self.tab_2)
         self.widgetWayTwo.setGeometry(QtCore.QRect(650, 5, 326, 65))
         self.widgetWayTwo.setObjectName("widgetWayTwo")
         self.widgetWayTwo.setStyleSheet("background-color:#C0C0C0")
-        #->
+        #-> Push button to load weights
         self.btnLoadWeights = QtWidgets.QPushButton(self.tab_2)
         self.btnLoadWeights.setGeometry(QtCore.QRect(750, 30, 120,32))
         self.btnLoadWeights.setObjectName("Load weights")
@@ -223,7 +228,7 @@ class Ui_SignalProcessing(QMainWindow):
         #self.labelLoadBestWeights.setGeometry(QtCore.QRect(805, 10, 166, 20))
         #self.labelLoadBestWeights.setObjectName("labelLoadBestWeights")
 
-        #-> PLOTS
+        #-> Plot train and validation accuracy 
         self.widgetPlotAcc = pg.PlotWidget(self.tab_2)
         self.widgetPlotAcc.setBackground("k")
         self.widgetPlotAcc.setGeometry(QtCore.QRect(10, 120, 375, 375))
@@ -238,11 +243,10 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetPlotAcc.getPlotItem().setLabel('left', "Accuracy")
 
 
-        #->
+        #-> Plot train and validation loss 
         self.widgetPlotLoss = pg.PlotWidget(self.tab_2)
         self.widgetPlotLoss.setTitle("Loss plot", color="w")
         self.widgetPlotAcc.setBackground("k")
-        # self.widgetPlotLoss.setLabel("left", "Loss->", **style)
         self.widgetPlotLoss.setGeometry(QtCore.QRect(400, 120, 375,375))
         self.widgetPlotLoss.setObjectName("widgetPlotLoss")
         self.widgetPlotLoss.addLegend(offset = (215,-235))
@@ -255,7 +259,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetPlotLoss.getPlotItem().setLabel('left', "Loss")
 
 
-        #-> TEST BUTTON
+        #-> TEST BUTTON: Test the trained model on the test set
         self.btnTest = QtWidgets.QPushButton(self.tab_2)
         self.btnTest.setGeometry(QtCore.QRect(1020, 30, 130, 30))
         self.btnTest.setText("Test")
@@ -264,8 +268,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.lblTest.setGeometry(QtCore.QRect(1010, 10, 170, 20))
         self.lblTest.setText("Run model on Test set:")
 
-        #-> MODEL STATS AND PARAMETERS
-
+        #-> MODEL STATS AND PARAMETERS: Write the model statistics and parameters used for training in respective places in the GUI
         self.widgetCBox = QtWidgets.QWidget(self.tab_2)
         self.widgetCBox.setGeometry(QtCore.QRect(10, 510, 310, 210))
         self.widgetCBox.setObjectName("widgetWayOne")
@@ -372,7 +375,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.note.setGeometry(QtCore.QRect(675, 675, 250, 20))
         self.note.setText("[ Updates on click of 'Test' button ] ")
 
-
+        #-> Confusion matrix plot
         self.widgetPlotConfMat = pg.PlotWidget(self.tab_2)
         # self.widgetPlotConfMat.setTitle("Confusion Matrix", color="w")
         self.widgetPlotConfMat.setBackground("k")
@@ -386,7 +389,7 @@ class Ui_SignalProcessing(QMainWindow):
 
 
 
-        #->   TAB 3
+        #->   TAB 3: Prediction plot
         self.tabWidget.addTab(self.tab_2, "")
 
         ''' Tab prediction '''
@@ -450,7 +453,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.widgetPredicSCL.addItem(self.predImg)
 
                
-
+        #-> COnfiguration and connecting the GUI elements
         self.tabWidget.addTab(self.tabPrediction, "")
 
         SignalProcessing.setCentralWidget(self.centralwidget)
@@ -474,9 +477,10 @@ class Ui_SignalProcessing(QMainWindow):
         self.connect()
 
     def retranslateUi(self, SignalProcessing):
+        '''Retranslation of the GUI elements.'''
         _translate = QtCore.QCoreApplication.translate
         SignalProcessing.setWindowTitle(_translate("SignalProcessing", "SignalProcessing"))
-        #TAB!
+        #TAB1
         self.btnLoadData.setText(_translate("SignalProcessing", "Load Data"))
         self.btnPlotRnd.setText(_translate("SignalProcessing", "Plot Random Signal"))
         self.labelSigLength.setText(_translate("SignalProcessing", "Signal Range:"))
@@ -485,18 +489,14 @@ class Ui_SignalProcessing(QMainWindow):
         #TAB2
         self.btnTrain.setText(_translate("SignalProcessing", "Start training "))
         self.btnLoadWeights.setText(_translate("SignalProcessing", "Load"))
-        #self.btnLoadBestWeights.setText(_translate("SignalProcessing", "Load"))
         self.labelLoadWeights.setText(_translate("SignalProcessing", "Pretrained weights:"))
         self.btnPredictSCL.setText(_translate("SignalProcessing", "Test Sclogram"))
         self.lblSaveWts.setText(_translate("SignalProcessing","Save weights:"))
-        #self.labelLoadBestWeights.setText(_translate("SignalProcessing", "Best-pretrained weights:"))
-        #self.QComboBoxRate.setText(_translate("SignalProcessing", "Unknown"))
         self.labelPredictSCL.setText(_translate("SignalProcessing", "Prediction From Scalogram"))
         self.labelNetworkType.setText(_translate("SignalProcessing", "Neural Network:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("SignalProcessing", "Training Signal"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPrediction), _translate("SignalProcessing", "Prediction"))
-       #self.btnPredictSGN.setText("Test Signal")
-       #self.labelPredictSGN.setText("Prediction From Signal")
+ 
 
     def connect(self):
         ''' Define Signal and SLot fo GUI Connection '''
@@ -509,7 +509,7 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnPredictSCL.clicked.connect(self.slotPredSCL)
 
 
-    # Slots are defined here
+    # Connect to the respective functions of GuiControlCommand.py 
     def loadData(self):
         LoadECGData(self)
 
@@ -531,18 +531,9 @@ class Ui_SignalProcessing(QMainWindow):
     def slotTest(self):
         validate_test_set(self)
 
-    
-
-    # Test Function
-    def test_func(self):
-        print(self.FilePath)
-        print(self.ECGData)
-
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     SignalProcessing = QtWidgets.QMainWindow()
     ui = Ui_SignalProcessing()
-    #ui.setupUi() # It is allready defined !
     SignalProcessing.show()
     sys.exit(app.exec_())
