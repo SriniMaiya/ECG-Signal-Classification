@@ -99,7 +99,12 @@ class NeuralNetworkClassifier:
                     weights = np.array([sum((labels.numpy() == t)) for t in [0,1,2] ])
                     weights = weights + 0.00000001
                     weights = 1./ np.array(weights) 
-                    self.class_weights = torch.FloatTensor(weights).cuda()
+                    
+                    if self.device.type.startswith("cuda"):
+                        self.class_weights = torch.FloatTensor(weights).cuda()
+                    else:
+                        self.class_weights = torch.FloatTensor(weights)
+
                     self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
                         
                     inputs = inputs.to(self.device)
