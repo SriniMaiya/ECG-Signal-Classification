@@ -1,16 +1,13 @@
 from __future__ import print_function
 from __future__ import division
-from doctest import OutputChecker
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from sklearn.utils.class_weight import compute_class_weight
 from torchvision import models
 import matplotlib.pyplot as plt
 from torch.optim import lr_scheduler
 import time
-import os
 import copy
 # print("PyTorch Version: ",torch.__version__)
 # print("Torchvision Version: ",torchvision.__version__)
@@ -20,7 +17,7 @@ class NeuralNetworkClassifier:
     def __init__(self, model_name:str = "AlexNet"):
         if model_name.upper() == "alexnet".upper():
             self.model = models.alexnet(pretrained=True, progress=True)
-            self.name = self.model._get_name()
+            self.name = self.model._get_name() 
         elif model_name.upper() == "squeezenet".upper():
             self.model = models.squeezenet1_1(pretrained=True, progress=True)
             self.name = self.model._get_name()
@@ -37,7 +34,7 @@ class NeuralNetworkClassifier:
         self.class_weights = None
         self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+        self.params = None
     
     def initialize_model(self,num_classes:int = 3):
         if self.name.upper() == "alexnet".upper():
@@ -46,18 +43,25 @@ class NeuralNetworkClassifier:
             n_feat = self.model.classifier[6].in_features
             self.model.classifier[6] = nn.Linear(n_feat, num_classes)
 
+
+
         elif self.name.upper() == "squeezenet".upper():
             self.model.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1,1), stride=(1,1))
             self.model.num_classes = num_classes
+
 
         elif self.name.upper() == "googlenet".upper():
             self.model.dropout = nn.Dropout(p=0.6, inplace=False)
             n_feat = self.model.fc.in_features
             self.model.fc = nn.Linear(n_feat, num_classes)
+
+
         elif self.name.upper() == "resnet".upper():
             self.model.fc = nn.Sequential(
                         nn.Dropout(p=0.65),
                         nn.Linear(in_features=512, out_features=num_classes, bias=True))
+
+
 
 
 
@@ -92,17 +96,11 @@ class NeuralNetworkClassifier:
                 running_corrects = 0
 
                 for inputs, labels in dataloaders[phase]:
-                    # counts= {x:y for x in [0,1,2] for y in sum(labels.numpy() == x)}
-                    # weights = compute_class_weight(class_weight='balanced', classes= [0,1,2],y= labels.numpy())
                     weights = np.array([sum((labels.numpy() == t)) for t in [0,1,2] ])
                     weights = weights + 0.00000001
-                    # print(weights)
                     weights = 1./ np.array(weights) 
-                    # print(weights)
                     self.class_weights = torch.FloatTensor(weights).cuda()
                     self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
-                    # if self.model._get_name() == "GoogLeNet":
-                    #     inputs = inputs[0]
                         
                     inputs = inputs.to(self.device)
                     labels = labels.to(self.device)

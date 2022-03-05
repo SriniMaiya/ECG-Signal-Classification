@@ -3,7 +3,7 @@ from scipy import io, signal
 import numpy as np
 from scipy.io import loadmat
 from matplotlib.pyplot import get_cmap
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import os
 from torch import nn
@@ -21,6 +21,8 @@ base on the User decisions
 
 Connection: It is called from slot @XXX From Main Gui 
 """
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu" ).type
 
 
 # HOw to open(Brows) data frmo PyQt
@@ -166,7 +168,9 @@ def creatRndPlotSignal(num, ARR, CHF, NSR, lengthStart, lengthEnd):
 
 
 def trainNetwork(self):
-    torch.cuda.empty_cache()
+    if device == "cuda":
+        torch.cuda.empty_cache()
+        
     self.batch_size = int(self.QCombobatch_size.currentText())
     self.num_epochs = int(self.txtNum_epochs.toPlainText())
     self.learning_rate = float(self.QComboBoxRate.currentText())
@@ -199,17 +203,16 @@ def trainNetwork(self):
 def save_weights(self):
     weights_path = os.path.join("Weights", self.model._get_name())
     os.makedirs(weights_path, exist_ok=True)
-    torch.save(self.weights, os.path.join(weights_path, "weights.pth"))
-    torch.save(self.best_weights, os.path.join(weights_path, "best_weights.pth"))
-    with open(os.path.join("Weights", self.model._get_name(), "model_hist.pkl"), 'wb') as f:
+    torch.save(self.weights, os.path.join(weights_path, "weights_"+device+".pth"))
+    with open(os.path.join("Weights", self.model._get_name(), "model_hist_"+device+".pkl"), 'wb') as f:
         pickle.dump(self.history, f)
-    path = os.path.join("Weights", self.model._get_name(), "model_params.npy")
+    path = os.path.join("Weights", self.model._get_name(), "model_params_"+device+".npy")
     params = [self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size]
     np.save(path, params)
     print("\n--> Saved weights and model history and train-parameters successfully.\n")
 
 
-def load_weights(self, kind: str):
+def load_weights(self):
     self.model = None
     self.weights = None
     torch.cuda.empty_cache()
@@ -218,18 +221,13 @@ def load_weights(self, kind: str):
     self.classifier.initialize_model(num_classes=3)
     self.model = self.classifier.model
     # Load Weights
-    if kind == "weights":
-        self.weights = torch.load(os.path.join("Weights", self.model._get_name(), "weights.pth"))
+    self.weights = torch.load(os.path.join("Weights", self.model._get_name(), "weights_"+device+".pth"))
 
-    elif kind == "best":
-        self.weights = torch.load(os.path.join("Weights", self.model._get_name(), "best_weights.pth"))
-    self.model.load_state_dict(self.weights)
-    self.model.eval()
     # Load the training and accuracy curves
-    with open(os.path.join("Weights", self.model._get_name(), "model_hist.pkl"), 'rb') as f:
+    with open(os.path.join("Weights", self.model._get_name(), "model_hist_"+device+".pkl"), 'rb') as f:
         self.history = pickle.load(f)
     # Load Model Parameters
-    path = os.path.join("Weights", self.model._get_name(), "model_params.npy")
+    path = os.path.join("Weights", self.model._get_name(), "model_params_"+device+".npy")
     self.batch_size, self.num_epochs, self.learning_rate, self.ValAcc, self.TrainAcc, self.batch_size = [str(x) for x in
                                                                                                          np.load(path)]
 
@@ -238,6 +236,9 @@ def load_weights(self, kind: str):
     plotAccVal = self.history["val"]["acc"]
     plotLossVal = self.history["val"]["loss"]
 
+    self.model.load_state_dict(self.weights)
+    self.model.eval()
+    
     self.trainAccPlot.setData(plotAccTrain)
     self.valAccPlot.setData(plotAccVal)
     self.trainLossPlot.setData(plotLossTrain)
@@ -263,7 +264,10 @@ def validate_test_set(self):
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
             img = totensor(img)
-            img = torch.unsqueeze(img, 0).cuda()
+            if device == "cuda":
+                img = torch.unsqueeze(img, 0).cuda()
+            else:
+                img = torch.unsqueeze(img, 0)
 
             output = self.model(img)
             pred = torch.argmax(output)
@@ -317,17 +321,20 @@ def pred_SCL(self):
                                     transforms.Resize(224)
                                 ])
     scalogram = totensor(img)
-    scalogram = torch.unsqueeze(scalogram, 0).cuda()
+    if device == "cuda":
+        scalogram = torch.unsqueeze(scalogram, 0).cuda()
+    else:
+        scalogram = torch.unsqueeze(scalogram, 0)
+
     preds = nn.Softmax(dim=1)(self.model(scalogram))
     preds = preds.cpu().detach().numpy()[0] * 100
     self.predARR.setText(": {:.2f}%".format(preds[0]))
     self.predCHF.setText(": {:.2f}%".format(preds[1]))
     self.predNSR.setText(": {:.2f}%".format(preds[2]))
-
+   
     img = np.array(img)
     img = np.rot90(img)
     self.predImg.setImage(img)
-
 
 def print_model_stats(self):
     self.txtModel.setText(":  " + self.model._get_name())

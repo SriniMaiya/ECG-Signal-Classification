@@ -9,7 +9,6 @@ Date : 14.Feb.2022
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
-from torch import layout
 from GuiControlCommand import *
 import pyqtgraph as pg
 import sys
@@ -506,7 +505,6 @@ class Ui_SignalProcessing(QMainWindow):
         self.btnPlotRnd.clicked.connect(self.plotSignal)
         self.btnLoadWeights.clicked.connect(self.slotLoadWWeights)
         self.btnSaveWts.clicked.connect(self.slotSaveWeights)
-        #self.btnLoadBestWeights.clicked.connect(self.slotLoadBWeights)
         self.btnTest.clicked.connect(self.slotTest)
         self.btnPredictSCL.clicked.connect(self.slotPredSCL)
 
@@ -522,10 +520,7 @@ class Ui_SignalProcessing(QMainWindow):
         trainNetwork(self)
 
     def slotLoadWWeights(self):
-        load_weights(self, kind="weights")
-
-    def slotLoadBWeights(self):
-        load_weights(self, kind="best")
+        load_weights(self)
 
     def slotSaveWeights(self):
         save_weights(self)
