@@ -54,4 +54,20 @@ def process_signal(data):
     data = notch_filter(data)
     return data
 ```
-As there are varying number of ECG signal for each class of 
+### Features
+----
+#### Signal Processing:
+- Signal Base wander removal
+- Powerline noise removal
+- Scalogram (Dataset) creation
+#### Neural Networsk:
+- Found in Models folder
+- Training calss-weights to reduce skewness in the dataloader batch.
+- Training on both GPU and CPU libraries
+#### GUI
+- Visualize original and corrected signals of all classes, along with corresponding Scalograms
+- Train a model with choosable Learning rate, Batch Size, Number of epochs.
+- Train the model. If happy with the results save weights.
+- Confusion matrix, Train and Validation loss as well as accuracy plots
+- Model Statistics, training parameters display, classwise accuracy display
+- Prediction using scalogram
