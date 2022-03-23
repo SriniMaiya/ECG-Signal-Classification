@@ -6,6 +6,7 @@ This project focuses on training neural networks to classify the given ECG signa
 - A GUI is built using PyQt, where tasks like Visualization, training of models, Loading and saving of weights, prediction tasks can be performed.
 
 A short demo of the operation of the GUI can be seen below.
+
 - Run [mainGui.py](mainGui.py) to load the GUI.
 - The weights are not included as the size exceeds Github limit. Model needs to be trained first to save the weights and pridict.
 
