@@ -56,7 +56,7 @@ def process_signal(data):
     data = notch_filter(data)
     return data
 ```
-### Features
+## Features
 ----
 #### Signal Processing:
 - Signal Base wander removal
