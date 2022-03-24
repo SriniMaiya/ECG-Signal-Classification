@@ -7,6 +7,7 @@ Course: Digital Signal Processing and Machine learning
 Date : 14.Feb.2022
 """
 
+
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from GuiControlCommand import *
@@ -80,24 +81,30 @@ class Ui_SignalProcessing(QMainWindow):
         self.tab.setObjectName("tab")
 
         self.cwt = pg.PlotWidget(self.tab)                         #cwt 
+        self.cwt.setTitle("Scalogram of original signal", color="w")
         self.cwt.setGeometry(QtCore.QRect(30, 10, 340, 340)) 
         self.cwt.setStyleSheet("background-color: blue")
         self.cwt.setObjectName("cwt")
         self.cwt.addItem(self.imgOne)
         
         self.cwtf = pg.PlotWidget(self.tab)                         #cwt filtered
+        self.cwtf.setTitle("Scalogram of filtered signal", color="w")
         self.cwtf.setGeometry(QtCore.QRect(380, 10, 340, 340))
         self.cwtf.setStyleSheet("background-color: white")
         self.cwtf.setObjectName("cwtf")
         self.cwtf.addItem(self.imgTwo)
 
+        
+        
         self.sig = pg.PlotWidget(self.tab)                           # signal
+        self.sig.setTitle("Original Signal", color="w")
         self.sig.setGeometry(QtCore.QRect(30, 360, 340, 340))
         self.sig.setStyleSheet("background-color: green")
         self.sig.setObjectName("sig")
         self.firstSignal = self.sig.plot(self.time, self.sig_NSR, pen= self.redPen)
 
         self.sigf = pg.PlotWidget(self.tab)                         # signal filtered
+        self.sigf.setTitle("Filtered signal", color="w")
         self.sigf.setGeometry(QtCore.QRect(380, 360, 340, 340))
         self.sigf.setStyleSheet("background-color: red")
         self.sigf.setObjectName("sigf")
