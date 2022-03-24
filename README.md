@@ -12,7 +12,10 @@ A short demo of the operation of the GUI can be seen below.
 - Run [mainGui.py](mainGui.py) to load the GUI.
 - The weights are not included as the size exceeds Github limit. Model needs to be trained first to save the weights and pridict.
 
-https://user-images.githubusercontent.com/75990547/159734552-6b23bf35-13de-416b-831c-2b3641b07d6a.mp4
+
+
+https://user-images.githubusercontent.com/75990547/159910104-0e60b8f7-a583-4154-bee7-8135df199aa7.mp4
+
 
 
        
