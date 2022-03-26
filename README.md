@@ -65,8 +65,7 @@ def process_signal(data):
 - Signal Base wander removal
 - Powerline noise removal
 - Scalogram (Dataset) creation
-#### Neural Networsk:
-- Found in Models folder
+#### [Neural networks](https://github.com/SriniMaiya/ECG-Signal-Classification/blob/main/Models/models.py):
 - Training calss-weights to reduce skewness in the dataloader batch.
 - Training on both GPU and CPU libraries
 #### GUI
