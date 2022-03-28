@@ -1,5 +1,6 @@
 # ECG-Signal-Classification
 Collegue: [Siamak Mirifar](https://github.com/SiamakMirifar)
+
 This project focuses on training neural networks to classify the given ECG signal into Arrhythmia(ARR) Congestive Heart Failure (CHF)  Normal Sinus Rhythm (NSR) categories. The project is combination of both Signal Processing and Computer Vision domains. 
 
 - Continuos Wavelet Transformation was used to generate the spectrograms which were used as input data, to perform a Image-Classification using 4 different Convolutional Neural Networks. 
