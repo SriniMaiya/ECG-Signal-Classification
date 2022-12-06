@@ -8,7 +8,7 @@ This project focuses on training neural networks to classify the given ECG signa
 
 ### Usage Guide:
 - ```pip install requirements_CPU.txt``` for running CPU version of PyTorch library
-- ```pip install requirements_GPU.txt``` for running CPU version of PyTorch library
+- ```pip install requirements_GPU.txt``` for running GPU version of PyTorch library
 - Run [mainGui.py](mainGui.py) to launch the GUI.
 - The weights are not included as the size exceeds Github limit. Model needs to be trained first to save the weights and pridict.
 
